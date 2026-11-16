@@ -23,7 +23,7 @@ class OrderController extends Controller
 
     public function store(CreateOrderRequest $request): RedirectResponse
     {
-        $this->orders->create($request->user()->id, (float) $request->input('total'));
+        $this->orders->create($request->user()->id);
 
         return redirect()->route('orders.index')->with('status', __('Order created.'));
     }

@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Modules\Order\Models\Order;
+use Illuminate\Contracts\View\View;
+
+class OrderController extends Controller
+{
+    public function index(): View
+    {
+        return view('admin.orders.index', ['orders' => Order::latest()->paginate(20)]);
+    }
+}

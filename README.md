@@ -2,6 +2,28 @@
 
 Laravel 12 modular monolith e-commerce platform with admin panel and frontend layout.
 
+## Architecture
+
+- Modular monolith under `app/Modules/` (Identity, Customer, Vendor, Product, Inventory, Cart, Order, Payment, Shipping, Commission, Accounting, Subscription, Review, Cms, Notification, Wishlist, Coupon).
+- Each module contains controllers, requests, services, policies, models, routes.
+- Admin controllers under `app/Http/Controllers/Admin/`.
+- Routes registered in `bootstrap/app.php`.
+
+## Directory Structure
+
+```
+app/
+  Http/Controllers/Admin/
+  Modules/
+bootstrap/app.php
+database/seeders/DemoDataSeeder.php
+resources/views/
+  layouts/admin.blade.php
+  layouts/frontend.blade.php
+  admin/
+routes/
+```
+
 ## Modules
 
 - Identity (auth, roles)
@@ -28,6 +50,10 @@ Laravel 12 modular monolith e-commerce platform with admin panel and frontend la
 - Blade, Tailwind CSS, Alpine.js
 - MySQL/SQLite
 - Chart.js (admin dashboard)
+
+## Environment
+
+Copy `.env.example` to `.env` and set DB credentials. Default SQLite supported.
 
 ## Setup
 
@@ -70,7 +96,14 @@ Seeds admin, vendor, customer, category, 10 products with inventory, 10 orders w
 ```bash
 php artisan test
 php artisan test --filter=Vendor
+php artisan test --filter=Product
 ```
+
+## Troubleshooting
+
+- Run `php artisan optimize:clear` after config changes.
+- Run `npm run build` after frontend changes.
+- Ensure `storage/` and `bootstrap/cache/` writable.
 
 ## License
 

@@ -27,22 +27,22 @@ routes/
 ## Modules
 
 - Identity (auth, roles)
-- Customer
+- Customer (profile, addresses)
 - Vendor (registration, approval, documents, bank accounts, staff)
-- Product (catalog, categories, attributes)
-- Inventory (stock management)
-- Cart
-- Order (checkout, order service)
-- Payment
-- Shipping
-- Commission
-- Accounting / Settlement
-- Subscription
-- Review
+- Product (catalog, categories, attributes, variants)
+- Inventory (stock management, adjustments)
+- Cart (add/update/remove, totals)
+- Order (checkout, order service, status flow)
+- Payment (gateways, transactions)
+- Shipping (methods, tracking)
+- Commission (vendor commissions)
+- Accounting / Settlement (payouts)
+- Subscription (plans, billing)
+- Review (product reviews, moderation)
 - CMS (pages, banners)
-- Notification
+- Notification (email/SMS/in-app)
 - Wishlist
-- Coupon
+- Coupon (discounts)
 
 ## Stack
 
@@ -54,6 +54,11 @@ routes/
 ## Environment
 
 Copy `.env.example` to `.env` and set DB credentials. Default SQLite supported.
+
+Key variables:
+- `APP_NAME`, `APP_URL`
+- `DB_CONNECTION`, `DB_DATABASE`
+- `MAIL_*` for notifications
 
 ## Setup
 
@@ -83,6 +88,8 @@ php artisan serve
 
 All module routes registered in `bootstrap/app.php` via `Route::middleware('web')->group(...)`.
 
+Admin routes under `/admin/*` (products, orders, payments, shipping, commissions, settlements, subscriptions, reviews, cms, notifications, wishlist, coupons, customers, vendors).
+
 ## Demo Data
 
 ```bash
@@ -98,6 +105,18 @@ php artisan test
 php artisan test --filter=Vendor
 php artisan test --filter=Product
 ```
+
+## Deployment
+
+- Set `APP_ENV=production`, `APP_DEBUG=false`.
+- Run `php artisan config:cache route:cache view:cache`.
+- Serve `public/` via web server; enable HTTPS.
+
+## Contributing
+
+1. Create feature branch.
+2. Follow PSR-12 and existing module patterns.
+3. Run tests before PR.
 
 ## Troubleshooting
 

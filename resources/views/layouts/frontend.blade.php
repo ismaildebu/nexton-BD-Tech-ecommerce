@@ -10,12 +10,18 @@
     <header class="border-b border-[#E8EBF0] bg-white sticky top-0 z-10">
         <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
             <a href="{{ url('/') }}" class="font-bold text-[#253442] text-lg">{{ config('app.name') }}</a>
-            <div class="flex items-center gap-4 text-sm">
+            <button class="md:hidden text-[#253442]" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')">☰</button>
+            <div class="hidden md:flex items-center gap-4 text-sm">
                 <a href="{{ route('products.index') }}" class="hover:text-[#6852D9]">{{ __('Products') }}</a>
                 <a href="{{ route('login') }}" class="hover:text-[#6852D9]">{{ __('Login') }}</a>
                 <a href="{{ route('register') }}" class="bg-[#6852D9] text-white px-3 py-1 rounded">{{ __('Register') }}</a>
             </div>
         </nav>
+        <div id="mobile-nav" class="hidden md:hidden px-4 pb-3 space-y-2 text-sm">
+            <a href="{{ route('products.index') }}" class="block hover:text-[#6852D9]">{{ __('Products') }}</a>
+            <a href="{{ route('login') }}" class="block hover:text-[#6852D9]">{{ __('Login') }}</a>
+            <a href="{{ route('register') }}" class="block bg-[#6852D9] text-white px-3 py-1 rounded w-fit">{{ __('Register') }}</a>
+        </div>
     </header>
     <main class="mx-auto max-w-6xl px-4 py-8">
         @if (session('status'))

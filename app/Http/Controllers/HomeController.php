@@ -13,7 +13,7 @@ class HomeController extends Controller
     {
         return view('frontend.home.index', [
             'featuredVendors' => Vendor::where('verification_status', 'approved')->where('status', 'active')->latest()->take(6)->get(),
-            'featuredProducts' => Product::where('is_active', true)->latest()->take(8)->get(),
+            'featuredProducts' => Product::where('is_active', true)->where('status', 'approved')->latest()->take(8)->get(),
             'categories' => Category::where('is_active', true)->whereNull('parent_id')->take(8)->get(),
         ]);
     }

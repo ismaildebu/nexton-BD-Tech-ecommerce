@@ -1,5 +1,9 @@
 # Nexton BD Tech E-Commerce
 
+![Laravel](https://img.shields.io/badge/Laravel-12-red)
+![PHP](https://img.shields.io/badge/PHP-8.2+-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 Laravel 12 modular monolith e-commerce platform with admin panel and frontend layout.
 
 ## Architecture
@@ -112,11 +116,21 @@ php artisan test --filter=Product
 - Run `php artisan config:cache route:cache view:cache`.
 - Serve `public/` via web server; enable HTTPS.
 
+## Security
+
+- Admin middleware protects `/admin`.
+- CSRF enabled by default.
+- Validate all requests via Form Requests.
+
 ## Contributing
 
 1. Create feature branch.
 2. Follow PSR-12 and existing module patterns.
 3. Run tests before PR.
+
+## Changelog
+
+- 2026-11-16: Scaffolded all modules, admin UI, demo data, README.
 
 ## Troubleshooting
 

@@ -29,4 +29,9 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+
+    public function inventory(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Modules\Inventory\Models\Inventory::class);
+    }
 }

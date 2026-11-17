@@ -13,14 +13,27 @@ class AdminDashboardController extends Controller
 {
     public function index(): View
     {
+        $revenue = Order::sum('total');
+        $ordersCount = Order::count();
+        $customersCount = User::count();
+        $pendingVendorsCount = Vendor::where('verification_status', 'pending')->count();
+        $productsCount = Product::count();
+        $paymentsCount = Payment::count();
+        $vendorsCount = Vendor::count();
+
+        $recentOrders = Order::with('user')->latest()->take(6)->get();
+        $inventoryProducts = Product::with(['inventory', 'category'])->latest()->take(6)->get();
+
         return view('admin.dashboard.index', [
-            'customers' => User::count(),
-            'vendors' => Vendor::count(),
-            'pendingVendors' => Vendor::where('verification_status', 'pending')->count(),
-            'products' => Product::count(),
-            'orders' => Order::count(),
-            'payments' => Payment::count(),
-            'revenue' => Order::sum('total'),
+            'customers' => $customersCount,
+            'vendors' => $vendorsCount,
+            'pendingVendors' => $pendingVendorsCount,
+            'products' => $productsCount,
+            'orders' => $ordersCount,
+            'payments' => $paymentsCount,
+            'revenue' => $revenue,
+            'recentOrders' => $recentOrders,
+            'inventoryProducts' => $inventoryProducts,
         ]);
     }
 }

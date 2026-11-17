@@ -63,7 +63,7 @@ class DemoDataSeeder extends Seeder
                 'category_id' => $cat->id,
                 'name' => "Demo Product {$i}",
                 'price' => 1000 + ($i * 100),
-                'status' => 'active',
+                'status' => 'approved',
                 'is_active' => true,
             ]);
 

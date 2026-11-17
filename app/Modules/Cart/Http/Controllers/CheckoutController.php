@@ -20,11 +20,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('status', __('Cart is empty.'));
         }
 
-        $total = $cart->items->sum(fn ($i) => $i->product->price * $i->quantity);
-
-        $this->orders->create($request->user()->id, (float) $total);
-
-        $cart->items()->delete();
+        $this->orders->create($request->user()->id);
 
         return redirect()->route('orders.index')->with('status', __('Order placed.'));
     }

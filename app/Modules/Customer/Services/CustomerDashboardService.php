@@ -22,6 +22,15 @@ class CustomerDashboardService
             'profile' => $user->customerProfile,
             'defaultAddress' => $user->addresses->firstWhere('is_default', true),
             'addressCount' => $user->addresses->count(),
+            'ordersCount' => class_exists(\App\Modules\Order\Models\Order::class)
+                ? \App\Modules\Order\Models\Order::where('user_id', $user->id)->count()
+                : 0,
+            'wishlistCount' => class_exists(\App\Modules\Wishlist\Models\Wishlist::class)
+                ? \App\Modules\Wishlist\Models\Wishlist::where('user_id', $user->id)->count()
+                : 0,
+            'recentOrders' => class_exists(\App\Modules\Order\Models\Order::class)
+                ? \App\Modules\Order\Models\Order::where('user_id', $user->id)->latest()->take(5)->get()
+                : collect(),
             'ordersAvailable' => class_exists(\App\Modules\Order\Services\OrderService::class),
         ];
     }

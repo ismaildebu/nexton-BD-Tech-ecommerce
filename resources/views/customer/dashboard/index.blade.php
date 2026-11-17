@@ -1,6 +1,7 @@
 @extends('layouts.frontend')
 @section('content')
-    <h1 class="text-2xl font-bold text-[#253442] mb-6">{{ __('Customer Dashboard') }}</h1>
+    <h1 class="text-2xl font-bold text-[#253442] mb-2">{{ __('Customer Dashboard') }}</h1>
+    <p class="text-sm text-gray-600 mb-6">{{ __('Welcome back') }}, <span class="font-semibold">{{ $user->name }}</span></p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div class="bg-white rounded-xl border border-[#E8EBF0] p-5">
             <p class="text-sm text-gray-500">{{ __('Orders') }}</p>

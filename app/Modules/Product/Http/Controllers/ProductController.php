@@ -34,6 +34,8 @@ class ProductController extends Controller
 
     public function show(Product $product): View
     {
+        $product->loadMissing(['vendor', 'category', 'brand']);
+
         return view('products.show', ['product' => $product]);
     }
 

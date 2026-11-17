@@ -62,6 +62,15 @@ class User extends Authenticatable
         return $this->hasMany(Address::class);
     }
 
+    public function canAuthenticate(): bool
+    {
+        $status = $this->status instanceof UserStatus
+            ? $this->status
+            : UserStatus::tryFrom((string) $this->status);
+
+        return $status?->canAuthenticate() ?? false;
+    }
+
     public function vendor(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(\App\Modules\Vendor\Models\Vendor::class, 'owner_user_id');

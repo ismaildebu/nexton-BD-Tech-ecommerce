@@ -7,6 +7,10 @@ use App\Modules\Vendor\Http\Controllers\VendorStaffController;
 use App\Modules\Vendor\Models\Vendor;
 
 Route::middleware('auth')->group(function () {
+        Route::resource('vendor/products', \App\Modules\Product\Http\Controllers\VendorProductController::class)
+        ->except(['show', 'destroy'])
+        ->names('vendor.products')
+        ->parameters(['products' => 'product']);
     Route::get('/vendor/dashboard', [\App\Modules\Vendor\Http\Controllers\VendorDashboardController::class, 'index'])->name('vendor.dashboard');
     Route::get('/vendor/register', [VendorRegistrationController::class, 'create'])->name('vendor.register.create');
     Route::post('/vendor/register', [VendorRegistrationController::class, 'store'])->name('vendor.register.store');

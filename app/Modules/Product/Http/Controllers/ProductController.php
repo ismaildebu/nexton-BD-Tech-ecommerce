@@ -32,8 +32,11 @@ class ProductController extends Controller
         return view('products.index', ['products' => $products]);
     }
 
-    public function show(Product $product): View
+        public function show(Product $product): View
     {
+        $ownerId = auth()->user()?->vendor?->id;
+        abort_unless($product->is_active || ($ownerId !== null && $ownerId === $product->vendor_id), 404);
+
         $product->loadMissing(['vendor', 'category', 'brand']);
 
         return view('products.show', ['product' => $product]);

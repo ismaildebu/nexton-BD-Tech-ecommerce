@@ -2,13 +2,14 @@
 
 namespace App\Modules\Product\Http\Requests;
 
+use App\Modules\Product\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProductRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user()?->can('create', Product::class) ?? false;
     }
 
     public function rules(): array

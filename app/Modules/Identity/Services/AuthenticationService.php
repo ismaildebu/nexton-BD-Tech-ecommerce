@@ -4,7 +4,9 @@ namespace App\Modules\Identity\Services;
 
 use App\Models\CustomerProfile;
 use App\Models\User;
+use App\Modules\Identity\Contracts\PhoneVerificationGateway;
 use App\Modules\Identity\Enums\UserStatus;
+use App\Modules\Identity\Exceptions\PendingVerificationException;
 use App\Modules\Identity\Support\PhoneNumber;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -20,6 +22,11 @@ use Illuminate\Validation\ValidationException;
 
 class AuthenticationService
 {
+    public function __construct(
+        private readonly PhoneVerificationGateway $phoneVerification,
+        private readonly VerificationService $verification,
+    ) {}
+
     private const MAX_LOGIN_ATTEMPTS = 5;
 
     private const LOCKOUT_SECONDS = 60;
@@ -83,7 +90,15 @@ class AuthenticationService
             ]);
         }
 
+        RateLimiter::clear($throttleKey);
+
         // Status is revealed only after the correct password was supplied.
+        $this->verification->syncStatus($user);
+
+        if ($user->status === UserStatus::PendingVerification) {
+            throw new PendingVerificationException($user);
+        }
+
         if (! $user->canAuthenticate()) {
             RateLimiter::hit($throttleKey, self::LOCKOUT_SECONDS);
 
@@ -91,8 +106,6 @@ class AuthenticationService
                 'login' => __('This account cannot sign in. Please contact support.'),
             ]);
         }
-
-        RateLimiter::clear($throttleKey);
 
         return $user;
     }
@@ -104,6 +117,7 @@ class AuthenticationService
     {
         Auth::guard('web')->login($user, $remember);
 
+        $request->session()->forget('verification_user_id');
         $request->session()->regenerate();
 
         $user->forceFill(['last_login_at' => now()])->save();
@@ -117,13 +131,31 @@ class AuthenticationService
         $request->session()->regenerateToken();
     }
 
-    /**
-     * Send a reset link. The caller must show the same message whether or not
-     * the email exists, to prevent account enumeration.
-     */
-    public function sendPasswordResetLink(string $email): void
+    public function sendPasswordResetLink(string $login): void
     {
-        Password::broker()->sendResetLink(['email' => Str::lower(trim($email))]);
+        $user = $this->findByLogin($login);
+
+        if ($user === null) {
+            return;
+        }
+
+        $this->verification->syncStatus($user);
+
+        if (! $user->canAuthenticate()) {
+            return;
+        }
+
+        if (str_contains(trim($login), '@')) {
+            if ($user->hasVerifiedEmail()) {
+                Password::broker()->sendResetLink(['email' => Str::lower(trim($login))]);
+            }
+
+            return;
+        }
+
+        if ($user->hasVerifiedPhone()) {
+            $this->phoneVerification->sendCode($user, PhoneVerificationGateway::PURPOSE_PASSWORD_RESET);
+        }
     }
 
     /**
@@ -134,19 +166,92 @@ class AuthenticationService
     {
         $credentials['email'] = Str::lower(trim($credentials['email']));
 
+        $user = User::query()->where('email', $credentials['email'])->first();
+
+        if ($user === null) {
+            return false;
+        }
+
+        $this->verification->syncStatus($user);
+
+        if (! $user->canAuthenticate()) {
+            return false;
+        }
+
         $status = Password::broker()->reset(
             Arr::only($credentials, ['email', 'password', 'password_confirmation', 'token']),
             function (User $user, string $password): void {
-                $user->forceFill([
-                    'password' => $password,
-                    'remember_token' => Str::random(60),
-                ])->save();
+                $this->verification->syncStatus($user);
 
-                event(new PasswordReset($user));
+                if (! $user->canAuthenticate()) {
+                    throw ValidationException::withMessages([
+                        'email' => __('This password reset link is invalid or has expired.'),
+                    ]);
+                }
+
+                $this->completePasswordReset($user, $password);
             }
         );
 
         return $status === Password::PASSWORD_RESET;
+    }
+
+    public function resetPasswordWithPhone(string $phone, string $code, string $password): bool
+    {
+        $phone = PhoneNumber::normalize($phone);
+
+        if ($phone === null) {
+            return false;
+        }
+
+        return DB::transaction(function () use ($phone, $code, $password): bool {
+            $user = User::where('phone', $phone)->lockForUpdate()->first();
+
+            if ($user === null) {
+                return false;
+            }
+
+            $this->verification->syncStatus($user);
+
+            if (! $user->canAuthenticate() || ! $user->hasVerifiedPhone()) {
+                return false;
+            }
+
+            if (! $this->phoneVerification->verify($user, $code, PhoneVerificationGateway::PURPOSE_PASSWORD_RESET)) {
+                return false;
+            }
+
+            $this->completePasswordReset($user, $password);
+
+            return true;
+        });
+    }
+
+    private function completePasswordReset(User $user, string $password): void
+    {
+        DB::transaction(function () use ($user, $password): void {
+            $user->forceFill([
+                'password' => $password,
+                'remember_token' => Str::random(60),
+            ])->save();
+
+            if ($user->email !== null) {
+                DB::table('password_reset_tokens')
+                    ->where('email', Str::lower($user->email))
+                    ->delete();
+            }
+
+            $this->phoneVerification->invalidate($user, PhoneVerificationGateway::PURPOSE_PASSWORD_RESET);
+            $this->revokeSessions($user);
+            event(new PasswordReset($user));
+        });
+    }
+
+    private function revokeSessions(User $user): void
+    {
+        if (config('session.driver') === 'database') {
+            DB::table(config('session.table', 'sessions'))->where('user_id', $user->getKey())->delete();
+        }
     }
 
     private function findByLogin(string $login): ?User

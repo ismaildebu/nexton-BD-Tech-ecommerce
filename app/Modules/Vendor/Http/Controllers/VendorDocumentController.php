@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorDocument;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -13,11 +14,15 @@ class VendorDocumentController extends Controller
 {
     public function index(Vendor $vendor): View
     {
+        Gate::authorize('manage', $vendor);
+
         return view('vendor.documents.index', ['vendor' => $vendor, 'documents' => $vendor->documents]);
     }
 
     public function store(Request $request, Vendor $vendor): RedirectResponse
     {
+        Gate::authorize('manage', $vendor);
+
         $request->validate([
             'document_type' => ['required', 'string', 'max:64'],
             'file' => ['required', 'file', 'max:5120', 'mimes:pdf,jpg,jpeg,png'],

@@ -129,4 +129,39 @@ class VendorProductTest extends TestCase
 
         $this->get(route('products.show', $product))->assertNotFound();
     }
+
+    public function test_editing_an_approved_product_requires_reapproval_before_it_is_live(): void
+    {
+        $this->withoutVite();
+        $owner = User::factory()->create();
+        $admin = User::factory()->create(['is_admin' => true]);
+        $vendor = $this->vendorFor($owner);
+        $product = $this->productFor($vendor, 'Approved Product', true);
+
+        $this->actingAs($owner)->put(route('vendor.products.update', $product), [
+            'name' => 'Edited Product', 'price' => '199.00',
+        ])->assertRedirect(route('vendor.products.index'));
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id, 'name' => 'Edited Product', 'status' => 'pending', 'is_active' => false,
+        ]);
+        $this->get(route('products.show', $product))->assertNotFound();
+        $this->get(route('products.index'))->assertDontSee('Edited Product');
+
+        $this->actingAs($admin)->post(route('admin.products.approve', $product))->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'status' => 'approved', 'is_active' => true]);
+        $this->get(route('products.show', $product))->assertOk()->assertSee('Edited Product');
+    }
+
+    public function test_vendor_can_deactivate_a_live_product(): void
+    {
+        $owner = User::factory()->create();
+        $product = $this->productFor($this->vendorFor($owner), 'Live Product', true);
+
+        $this->actingAs($owner)->delete(route('vendor.products.destroy', $product))
+            ->assertRedirect(route('vendor.products.index'));
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'is_active' => false]);
+        $this->get(route('products.show', $product))->assertNotFound();
+    }
 }

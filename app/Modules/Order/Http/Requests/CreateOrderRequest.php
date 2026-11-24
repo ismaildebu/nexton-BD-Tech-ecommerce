@@ -2,19 +2,8 @@
 
 namespace App\Modules\Order\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Modules\Cart\Http\Requests\CheckoutRequest;
 
-class CreateOrderRequest extends FormRequest
+class CreateOrderRequest extends CheckoutRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user() !== null;
-    }
-
-    public function rules(): array
-    {
-        return [
-            'total' => ['required', 'numeric', 'min:0'],
-        ];
-    }
 }

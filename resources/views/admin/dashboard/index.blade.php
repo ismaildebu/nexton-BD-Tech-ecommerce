@@ -1,391 +1,191 @@
 @extends('layouts.admin')
 @section('title', __('Dashboard'))
-
 @section('content')
-    <!-- 4 Top Metric Cards (Image 1 Style) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-        <!-- Card 1: Total Sales -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition">
-            <div class="flex items-center justify-between">
-                <div class="w-12 h-12 rounded-xl bg-purple-50 text-[#6852D9] flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                    </svg>
-                </div>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600">
-                    +15.8%
-                </span>
-            </div>
-            <div class="mt-4">
-                <div class="text-2xl font-extrabold text-slate-800 tracking-tight">৳ {{ number_format($revenue, 2) }}</div>
-                <div class="text-xs font-medium text-slate-400 mt-1">{{ __('Total Sales & Revenue') }}</div>
-            </div>
-        </div>
+    <x-ui.page-header
+        :title="__('Dashboard')"
+        :eyebrow="__('Operations overview')"
+        :description="__('Monitor revenue, orders, customers and inventory from one workspace.')"
+    />
 
-        <!-- Card 2: Orders Placed -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition">
-            <div class="flex items-center justify-between">
-                <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>
-                </div>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-600">
-                    {{ $orders }} active
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <x-ui.card :padding="false" class="ui-stat relative overflow-hidden">
+            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 to-brand-300"></div>
+            <div class="flex items-start justify-between gap-3">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-600">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                 </span>
+                <x-ui.badge tone="success">{{ __('Paid & completed') }}</x-ui.badge>
             </div>
-            <div class="mt-4">
-                <div class="text-2xl font-extrabold text-slate-800 tracking-tight">{{ number_format($orders) }}</div>
-                <div class="text-xs font-medium text-slate-400 mt-1">{{ __('Orders Placed') }}</div>
-            </div>
-        </div>
+            <p class="ui-stat-label mt-5">{{ __('Recognized revenue') }}</p>
+            <p class="ui-stat-value">৳ {{ number_format($revenue, 2) }}</p>
+            <p class="mt-2 text-xs leading-5 text-slate-500">{{ __('Revenue from completed, paid orders.') }}</p>
+        </x-ui.card>
 
-        <!-- Card 3: Active Customers -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition">
-            <div class="flex items-center justify-between">
-                <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                </div>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600">
-                    +8.2%
+        <x-ui.card :padding="false" class="ui-stat">
+            <div class="flex items-start justify-between gap-3">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                 </span>
+                <x-ui.badge tone="info">{{ __('All time') }}</x-ui.badge>
             </div>
-            <div class="mt-4">
-                <div class="text-2xl font-extrabold text-slate-800 tracking-tight">{{ number_format($customers) }}</div>
-                <div class="text-xs font-medium text-slate-400 mt-1">{{ __('Registered Customers') }}</div>
-            </div>
-        </div>
+            <p class="ui-stat-label mt-5">{{ __('Total orders') }}</p>
+            <p class="ui-stat-value">{{ number_format($orders) }}</p>
+            <a href="{{ route('admin.orders.index') }}" class="ui-link mt-4 inline-flex items-center gap-1.5 text-xs">
+                {{ __('Manage orders') }}
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+            </a>
+        </x-ui.card>
 
-        <!-- Card 4: Vendors / Pending -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition">
-            <div class="flex items-center justify-between">
-                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                    </svg>
-                </div>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $pendingVendors > 0 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' }}">
-                    {{ $pendingVendors }} pending
+        <x-ui.card :padding="false" class="ui-stat">
+            <div class="flex items-start justify-between gap-3">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </span>
+                <x-ui.badge tone="accent">{{ __('Customers') }}</x-ui.badge>
             </div>
-            <div class="mt-4">
-                <div class="text-2xl font-extrabold text-slate-800 tracking-tight">{{ number_format($vendors) }}</div>
-                <div class="text-xs font-medium text-slate-400 mt-1">{{ __('Marketplace Vendors') }}</div>
+            <p class="ui-stat-label mt-5">{{ __('Non-admin customers') }}</p>
+            <p class="ui-stat-value">{{ number_format($customers) }}</p>
+            <a href="{{ route('admin.customers.index') }}" class="ui-link mt-4 inline-flex items-center gap-1.5 text-xs">
+                {{ __('View customers') }}
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+            </a>
+        </x-ui.card>
+
+        <x-ui.card :padding="false" class="ui-stat">
+            <div class="flex items-start justify-between gap-3">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h-1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </span>
+                <x-ui.badge :tone="$pendingVendors > 0 ? 'warning' : 'neutral'">
+                    {{ number_format($pendingVendors) }} {{ __('pending') }}
+                </x-ui.badge>
             </div>
-        </div>
+            <p class="ui-stat-label mt-5">{{ __('Marketplace vendors') }}</p>
+            <p class="ui-stat-value">{{ number_format($vendors) }}</p>
+            <a href="{{ route('admin.vendors.index') }}" class="ui-link mt-4 inline-flex items-center gap-1.5 text-xs">
+                {{ __('Review vendors') }}
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+            </a>
+        </x-ui.card>
     </div>
 
-    <!-- Charts Row (Image 1 & 3 Style) -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Donut Chart: Sales Distribution -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm flex flex-col justify-between">
-            <div>
-                <div class="flex items-center justify-between mb-1">
-                    <h3 class="font-bold text-slate-800 text-sm">{{ __('Total Sales Distribution') }}</h3>
-                    <span class="text-xs text-slate-400">All Time</span>
+    <div class="mt-7 grid grid-cols-1 gap-6 2xl:grid-cols-2">
+        <x-ui.card :padding="false" class="min-w-0 overflow-hidden">
+            <div class="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div>
+                    <h2 class="ui-section-title">{{ __('Product inventory') }}</h2>
+                    <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('Latest products and current stock levels') }}</p>
                 </div>
-                <p class="text-xs text-slate-400 mb-4">{{ __('Channel breakdown across all store operations.') }}</p>
-                <div class="relative flex items-center justify-center my-4">
-                    <div class="w-48 h-48">
-                        <canvas id="donutChart"></canvas>
-                    </div>
-                </div>
+                <x-ui.button :href="route('admin.products.index')" variant="outline" size="sm" class="self-start sm:self-auto">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    {{ __('Manage products') }}
+                </x-ui.button>
             </div>
-            <div class="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 text-center text-xs">
-                <div>
-                    <div class="flex items-center justify-center gap-1.5 text-slate-500 font-medium">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#6852D9]"></span> Online
-                    </div>
-                    <div class="font-bold text-slate-800 mt-1">62%</div>
-                </div>
-                <div>
-                    <div class="flex items-center justify-center gap-1.5 text-slate-500 font-medium">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#20B59A]"></span> Vendor
-                    </div>
-                    <div class="font-bold text-slate-800 mt-1">28%</div>
-                </div>
-                <div>
-                    <div class="flex items-center justify-center gap-1.5 text-slate-500 font-medium">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#F2B75D]"></span> B2B
-                    </div>
-                    <div class="font-bold text-slate-800 mt-1">10%</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Combo Bar + Line Chart: Sales Analytics -->
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="font-bold text-slate-800 text-sm">{{ __('Sales Analytics & Forecast') }}</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">{{ __('Comparison of actual sales vs projected performance.') }}</p>
-                </div>
-                <div class="flex items-center gap-4 text-xs">
-                    <div class="flex items-center gap-1.5 text-slate-500">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#6852D9]"></span> Actual Sales
-                    </div>
-                    <div class="flex items-center gap-1.5 text-slate-500">
-                        <span class="w-2.5 h-0.5 bg-emerald-500"></span> Projected
-                    </div>
-                    <a href="{{ route('admin.orders.index') }}" class="font-semibold text-[#6852D9] hover:underline flex items-center gap-1">
-                        View Reports &rarr;
-                    </a>
-                </div>
-            </div>
-            <div class="h-64">
-                <canvas id="salesAnalyticsChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Data Tables Row (Image 1 & 3 Style) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Product Inventory Table -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col justify-between">
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-800 text-sm">{{ __('Product Inventory') }}</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">{{ __('Stock status and pricing breakdown') }}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('admin.products.index') }}" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#6852D9] text-white hover:bg-[#5741c4] transition flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>Add Product</span>
-                    </a>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50/70 text-slate-400 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-100">
+            @if ($inventoryProducts->isEmpty())
+                <x-ui.empty-state
+                    :title="__('No products found in inventory')"
+                    :description="__('Products will appear here with their latest stock levels.')"
+                >
+                    <x-slot:icon>
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    </x-slot:icon>
+                </x-ui.empty-state>
+            @else
+                <x-ui.table :caption="__('Latest products and stock levels')" class="rounded-none border-0 shadow-none">
+                    <x-slot:head>
                         <tr>
-                            <th class="py-3 px-4">Product</th>
-                            <th class="py-3 px-3">Stock</th>
-                            <th class="py-3 px-3">Price</th>
-                            <th class="py-3 px-3">Status</th>
+                            <th scope="col">{{ __('Product') }}</th>
+                            <th scope="col">{{ __('Stock') }}</th>
+                            <th scope="col">{{ __('Price') }}</th>
+                            <th scope="col">{{ __('Status') }}</th>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse ($inventoryProducts as $prod)
-                            <tr class="hover:bg-slate-50/80 transition">
-                                <td class="py-3 px-4 flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/60 flex items-center justify-center shrink-0 text-[#6852D9] font-bold">
-                                        <svg class="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    </div>
-                                    <div class="truncate max-w-[160px]">
-                                        <div class="font-semibold text-slate-800 truncate">{{ $prod->name }}</div>
-                                        <div class="text-[10px] text-slate-400">{{ $prod->category->name ?? 'General' }}</div>
-                                    </div>
-                                </td>
-                                <td class="py-3 px-3 font-medium text-slate-600 whitespace-nowrap">
-                                    {{ $prod->inventory->quantity ?? '15' }} units
-                                </td>
-                                <td class="py-3 px-3 font-semibold text-slate-800 whitespace-nowrap">
-                                    ৳ {{ number_format($prod->price, 2) }}
-                                </td>
-                                <td class="py-3 px-3 whitespace-nowrap">
-                                    @php $qty = $prod->inventory->quantity ?? 15; @endphp
-                                    @if ($qty > 5)
-                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
-                                        </span>
-                                    @elseif ($qty > 0)
-                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Low Stock
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="py-8 text-center text-slate-400 text-xs">No products found in inventory.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-3 border-t border-slate-100 text-center">
-                <a href="{{ route('admin.products.index') }}" class="text-xs font-semibold text-[#6852D9] hover:underline">
-                    View all {{ $products }} products &rarr;
+                    </x-slot:head>
+                    @foreach ($inventoryProducts as $product)
+                        @php
+                            $quantity = $product->inventory?->quantity ?? 0;
+                            $threshold = $product->inventory?->low_stock_threshold ?? 5;
+                        @endphp
+                        <tr>
+                            <td>
+                                <a href="{{ route('admin.inventory.index') }}" class="font-semibold text-slate-900 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20">{{ $product->name }}</a>
+                                <span class="mt-1 block text-xs text-slate-400">{{ $product->category->name ?? __('Uncategorized') }}</span>
+                            </td>
+                            <td class="whitespace-nowrap font-semibold text-slate-700">{{ number_format($quantity) }} {{ __('units') }}</td>
+                            <td class="whitespace-nowrap font-semibold text-slate-900">৳ {{ number_format($product->price, 2) }}</td>
+                            <td>
+                                <x-ui.badge :tone="$quantity === 0 ? 'danger' : ($quantity <= $threshold ? 'warning' : 'success')">
+                                    {{ $quantity === 0 ? __('Out of stock') : ($quantity <= $threshold ? __('Low stock') : __('In stock')) }}
+                                </x-ui.badge>
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-ui.table>
+            @endif
+
+            <div class="border-t border-slate-100 p-4 text-center">
+                <a href="{{ route('admin.inventory.index') }}" class="ui-link inline-flex items-center gap-1.5 text-xs">
+                    {{ __('Adjust inventory') }}
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
                 </a>
             </div>
-        </div>
+        </x-ui.card>
 
-        <!-- Recent Orders Table -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col justify-between">
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <x-ui.card :padding="false" class="min-w-0 overflow-hidden">
+            <div class="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
-                    <h3 class="font-bold text-slate-800 text-sm">{{ __('Recent Orders') }}</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">{{ __('Latest customer purchases and transactions') }}</p>
+                    <h2 class="ui-section-title">{{ __('Recent orders') }}</h2>
+                    <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('Latest customer orders') }}</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('admin.orders.index') }}" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-                        Export CSV
-                    </a>
-                </div>
+                <x-ui.button :href="route('admin.orders.index')" variant="outline" size="sm" class="self-start sm:self-auto">
+                    {{ __('View all orders') }}
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                </x-ui.button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50/70 text-slate-400 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-100">
+
+            @if ($recentOrders->isEmpty())
+                <x-ui.empty-state
+                    :title="__('No orders recorded yet')"
+                    :description="__('New customer orders will appear here as soon as they are placed.')"
+                >
+                    <x-slot:icon>
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    </x-slot:icon>
+                </x-ui.empty-state>
+            @else
+                <x-ui.table :caption="__('Recent customer orders')" class="rounded-none border-0 shadow-none">
+                    <x-slot:head>
                         <tr>
-                            <th class="py-3 px-4">Customer</th>
-                            <th class="py-3 px-3">Order ID</th>
-                            <th class="py-3 px-3">Amount</th>
-                            <th class="py-3 px-3">Status</th>
+                            <th scope="col">{{ __('Customer') }}</th>
+                            <th scope="col">{{ __('Order') }}</th>
+                            <th scope="col">{{ __('Amount') }}</th>
+                            <th scope="col">{{ __('Status') }}</th>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse ($recentOrders as $order)
-                            <tr class="hover:bg-slate-50/80 transition">
-                                <td class="py-3 px-4 flex items-center gap-2.5">
-                                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-200 to-slate-300 text-slate-700 font-bold flex items-center justify-center shrink-0 text-xs">
-                                        {{ substr($order->user->name ?? 'Customer', 0, 1) }}
-                                    </div>
-                                    <div class="truncate max-w-[120px]">
-                                        <div class="font-semibold text-slate-800 truncate">{{ $order->user->name ?? 'Customer' }}</div>
-                                        <div class="text-[10px] text-slate-400">{{ $order->created_at->format('d M Y') }}</div>
-                                    </div>
-                                </td>
-                                <td class="py-3 px-3 font-mono font-medium text-slate-600 whitespace-nowrap">
-                                    {{ $order->order_number }}
-                                </td>
-                                <td class="py-3 px-3 font-semibold text-slate-800 whitespace-nowrap">
-                                    ৳ {{ number_format($order->total, 2) }}
-                                </td>
-                                <td class="py-3 px-3 whitespace-nowrap">
-                                    @if ($order->status === 'completed' || $order->status === 'delivered')
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">
-                                            Completed
-                                        </span>
-                                    @elseif ($order->status === 'pending')
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700">
-                                            In Progress
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700">
-                                            {{ ucfirst($order->status) }}
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="py-8 text-center text-slate-400 text-xs">No orders recorded yet.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-3 border-t border-slate-100 text-center">
-                <a href="{{ route('admin.orders.index') }}" class="text-xs font-semibold text-[#6852D9] hover:underline">
-                    View all {{ $orders }} orders &rarr;
+                    </x-slot:head>
+                    @foreach ($recentOrders as $order)
+                        <tr>
+                            <td>
+                                <span class="block max-w-[10rem] truncate font-semibold text-slate-900">{{ $order->user->name ?? __('Customer') }}</span>
+                                <time datetime="{{ $order->created_at->toIso8601String() }}" class="mt-1 block text-xs text-slate-400">{{ $order->created_at->format('d M Y') }}</time>
+                            </td>
+                            <td class="whitespace-nowrap">
+                                <a href="{{ route('admin.orders.show', $order) }}" class="ui-link font-mono text-xs">{{ $order->order_number }}</a>
+                            </td>
+                            <td class="whitespace-nowrap font-semibold text-slate-900">৳ {{ number_format($order->total, 2) }}</td>
+                            <td>
+                                <x-ui.status>{{ __(ucfirst(str_replace('_', ' ', $order->status))) }}</x-ui.status>
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-ui.table>
+            @endif
+
+            <div class="border-t border-slate-100 p-4 text-center">
+                <a href="{{ route('admin.orders.index') }}" class="ui-link inline-flex items-center gap-1.5 text-xs">
+                    {{ __('View all') }} {{ number_format($orders) }} {{ __('orders') }}
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
                 </a>
             </div>
-        </div>
+        </x-ui.card>
     </div>
-
-    <!-- Chart Scripts -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Donut Chart
-            const donutCtx = document.getElementById('donutChart');
-            if (donutCtx) {
-                new Chart(donutCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Online Store', 'Vendor Marketplace', 'B2B Revenue'],
-                        datasets: [{
-                            data: [62, 28, 10],
-                            backgroundColor: ['#6852D9', '#20B59A', '#F2B75D'],
-                            borderWidth: 0,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '72%',
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ' ' + context.label + ': ' + context.raw + '%';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Combo Bar + Line Chart
-            const analyticsCtx = document.getElementById('salesAnalyticsChart');
-            if (analyticsCtx) {
-                new Chart(analyticsCtx, {
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                        datasets: [
-                            {
-                                type: 'bar',
-                                label: 'Online Sales',
-                                data: [1200, 1050, 1300, 1100, 1450, 1600, 1350, 1400, 1550, 1680, 1750, 1900],
-                                backgroundColor: '#6852D9',
-                                borderRadius: 6,
-                                barThickness: 14
-                            },
-                            {
-                                type: 'bar',
-                                label: 'Vendor Sales',
-                                data: [800, 650, 900, 750, 950, 1100, 850, 920, 1050, 1150, 1200, 1350],
-                                backgroundColor: '#E2E8F0',
-                                borderRadius: 6,
-                                barThickness: 14
-                            },
-                            {
-                                type: 'line',
-                                label: 'Projected Sales',
-                                data: [2100, 2200, 2150, 2250, 2400, 2550, 2300, 2450, 2500, 2700, 2850, 3100],
-                                borderColor: '#10B981',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointBackgroundColor: '#10B981',
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                fill: false,
-                                tension: 0.3
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        scales: {
-                            x: {
-                                grid: { display: false }
-                            },
-                            y: {
-                                grid: { color: '#F1F5F9' },
-                                ticks: {
-                                    callback: function(value) { return '৳' + value; }
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-        });
-    </script>
 @endsection

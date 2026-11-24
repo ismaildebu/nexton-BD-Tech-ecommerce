@@ -80,7 +80,9 @@ php artisan serve
 ## Admin
 
 - URL: `/admin`
-- Admin users: `mallick.jess@gmail.com`, `admin@example.com` (is_admin = true)
+- Demo admin: `admin@example.com` (password: `password`, is_admin = true)
+- Demo vendor: `vendor@example.com` (password: `password`)
+- Demo customer: `customer@example.com` (password: `password`)
 - Sidebar navigation covers all modules (products, orders, payments, shipping, commissions, settlements, subscriptions, reviews, cms, notifications, wishlist, coupons, customers, vendors).
 
 ## Frontend

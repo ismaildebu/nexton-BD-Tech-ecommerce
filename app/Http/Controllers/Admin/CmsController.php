@@ -12,4 +12,9 @@ class CmsController extends Controller
     {
         return view('admin.cms.index', ['pages' => CmsPage::latest()->paginate(20)]);
     }
+
+    public function create(): View
+    {
+        return view('admin.cms.create');
+    }
 }

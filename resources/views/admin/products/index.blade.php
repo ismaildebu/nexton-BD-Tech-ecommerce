@@ -1,82 +1,115 @@
 @extends('layouts.admin')
+@section('title', __('Products'))
 @section('content')
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h1 class="text-2xl font-bold">{{ __('Products') }}</h1>
-            <p class="mt-1 text-sm text-gray-500">{{ $pendingCount }} {{ __('awaiting review') }}</p>
-        </div>
-        <div class="flex gap-2 text-sm">
-            @php
-                $tab = fn (?string $s) => 'rounded-full px-3 py-1.5 font-medium '
-                    . (($status ?? null) === $s ? 'bg-slate-900 text-white' : 'bg-white text-gray-600 ring-1 ring-slate-200 hover:bg-slate-50');
-            @endphp
-            <a href="{{ route('admin.products.index') }}" class="{{ $tab(null) }}">{{ __('All') }}</a>
-            <a href="{{ route('admin.products.index', ['status' => 'pending']) }}" class="{{ $tab('pending') }}">{{ __('Pending') }}</a>
-            <a href="{{ route('admin.products.index', ['status' => 'approved']) }}" class="{{ $tab('approved') }}">{{ __('Approved') }}</a>
-            <a href="{{ route('admin.products.index', ['status' => 'rejected']) }}" class="{{ $tab('rejected') }}">{{ __('Rejected') }}</a>
-        </div>
-    </div>
+    <x-ui.page-header
+        :title="__('Products')"
+        :eyebrow="__('Catalog moderation')"
+        :description="__('Awaiting review: :count', ['count' => number_format($pendingCount)])"
+    >
+        <x-slot:action>
+            <x-ui.badge :tone="$pendingCount > 0 ? 'warning' : 'success'">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ number_format($pendingCount) }} {{ __('pending review') }}
+            </x-ui.badge>
+        </x-slot:action>
+    </x-ui.page-header>
 
     @if (session('product_notice'))
-        <div role="status" class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">{{ session('product_notice') }}</div>
+        <x-ui.alert tone="success" class="mb-5" role="status">{{ session('product_notice') }}</x-ui.alert>
     @endif
     @if (session('product_error'))
-        <div role="alert" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ session('product_error') }}</div>
+        <x-ui.alert tone="error" class="mb-5">{{ session('product_error') }}</x-ui.alert>
     @endif
 
-    <div class="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-        <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-left text-xs uppercase text-gray-500">
+    <nav class="mb-5 flex flex-wrap gap-2" aria-label="{{ __('Filter products by status') }}">
+        @php
+            $tabs = [
+                null => __('All'),
+                'pending' => __('Pending'),
+                'approved' => __('Approved'),
+                'rejected' => __('Rejected'),
+            ];
+        @endphp
+        @foreach ($tabs as $value => $label)
+            <x-ui.button
+                :href="route('admin.products.index', $value ? ['status' => $value] : [])"
+                :variant="($status ?? null) === $value ? 'dark' : 'outline'"
+                size="sm"
+                class="min-h-10"
+                :aria-current="($status ?? null) === $value ? 'page' : null"
+            >{{ $label }}</x-ui.button>
+        @endforeach
+    </nav>
+
+    @if ($products->isEmpty())
+        <x-ui.card>
+            <x-ui.empty-state
+                :title="$status ? __('No :status products found', ['status' => __(ucfirst($status))]) : __('No products found')"
+                :description="$status ? __('Try another status filter or view the full catalog.') : __('Product submissions will appear here when they are available.')"
+            >
+                <x-slot:icon>
+                    <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4"/></svg>
+                </x-slot:icon>
+                @if ($status)
+                    <x-slot:action>
+                        <x-ui.button :href="route('admin.products.index')" variant="outline">{{ __('View all products') }}</x-ui.button>
+                    </x-slot:action>
+                @endif
+            </x-ui.empty-state>
+        </x-ui.card>
+    @else
+        <x-ui.table :caption="__('Product review queue')">
+            <x-slot:head>
                 <tr>
-                    <th class="px-4 py-3">{{ __('Name') }}</th>
-                    <th class="px-4 py-3">{{ __('Vendor') }}</th>
-                    <th class="px-4 py-3">{{ __('Category') }}</th>
-                    <th class="px-4 py-3 text-right">{{ __('Price') }}</th>
-                    <th class="px-4 py-3">{{ __('Status') }}</th>
-                    <th class="px-4 py-3">{{ __('Storefront') }}</th>
-                    <th class="px-4 py-3"></th>
+                    <th scope="col">{{ __('Name') }}</th>
+                    <th scope="col">{{ __('Vendor') }}</th>
+                    <th scope="col">{{ __('Category') }}</th>
+                    <th scope="col" class="text-right">{{ __('Price') }}</th>
+                    <th scope="col">{{ __('Status') }}</th>
+                    <th scope="col">{{ __('Storefront') }}</th>
+                    <th scope="col"><span class="sr-only">{{ __('Actions') }}</span></th>
                 </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse ($products as $p)
-                    <tr>
-                        <td class="px-4 py-3 font-medium">{{ $p->name }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $p->vendor->business_name ?? '—' }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $p->category->name ?? '—' }}</td>
-                        <td class="px-4 py-3 text-right">&#2547; {{ number_format($p->price, 2) }}</td>
-                        <td class="px-4 py-3">
-                            @php
-                                $badge = match ($p->status) {
-                                    'approved' => 'bg-emerald-50 text-emerald-800',
-                                    'rejected' => 'bg-red-50 text-red-800',
-                                    default => 'bg-amber-50 text-amber-800',
-                                };
-                            @endphp
-                            <span class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ $badge }}">{{ ucfirst($p->status) }}</span>
-                        </td>
-                        <td class="px-4 py-3 text-xs {{ $p->is_active ? 'text-emerald-700' : 'text-gray-400' }}">
+            </x-slot:head>
+            @foreach ($products as $p)
+                <tr>
+                    <td class="min-w-48 font-semibold text-slate-900">{{ $p->name }}</td>
+                    <td>{{ $p->vendor->business_name ?? '—' }}</td>
+                    <td>{{ $p->category->name ?? '—' }}</td>
+                    <td class="whitespace-nowrap text-right font-semibold text-slate-900">৳ {{ number_format($p->price, 2) }}</td>
+                    <td>
+                        <x-ui.status>{{ __(ucfirst($p->status)) }}</x-ui.status>
+                    </td>
+                    <td>
+                        <x-ui.badge :tone="$p->is_active ? 'success' : 'neutral'">
+                            <span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>
                             {{ $p->is_active ? __('Live') : __('Hidden') }}
-                        </td>
-                        <td class="px-4 py-3">
-                            @if ($p->status === 'pending')
-                                <div class="flex justify-end gap-2">
-                                    <form method="POST" action="{{ route('admin.products.approve', $p) }}">
-                                        @csrf
-                                        <button type="submit" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">{{ __('Approve') }}</button>
-                                    </form>
-                                    <form method="POST" action="{{ route('admin.products.reject', $p) }}" onsubmit="return confirm('{{ __('Reject this product?') }}')">
-                                        @csrf
-                                        <button type="submit" class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">{{ __('Reject') }}</button>
-                                    </form>
-                                </div>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="7" class="px-4 py-10 text-center text-gray-500">{{ __('No products found.') }}</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    <div class="mt-4">{{ $products->links() }}</div>
+                        </x-ui.badge>
+                    </td>
+                    <td class="text-right">
+                        @if ($p->status === 'pending')
+                            <div class="flex justify-end gap-2">
+                                <form method="POST" action="{{ route('admin.products.approve', $p) }}">
+                                    @csrf
+                                    <x-ui.button type="submit" variant="success" size="sm" class="min-h-10">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                        {{ __('Approve') }}
+                                    </x-ui.button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.products.reject', $p) }}" onsubmit="return confirm('{{ __('Reject this product?') }}')">
+                                    @csrf
+                                    <x-ui.button type="submit" variant="outline" size="sm" class="min-h-10 text-rose-700 hover:border-rose-200 hover:bg-rose-50">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        {{ __('Reject') }}
+                                    </x-ui.button>
+                                </form>
+                            </div>
+                        @else
+                            <span class="text-xs text-slate-400">{{ __('No action available') }}</span>
+                        @endif
+                    </td>
+                </tr>
+            @endforeach
+        </x-ui.table>
+        <div class="ui-pagination mt-5">{{ $products->links() }}</div>
+    @endif
 @endsection

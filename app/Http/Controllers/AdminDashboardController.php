@@ -13,9 +13,11 @@ class AdminDashboardController extends Controller
 {
     public function index(): View
     {
-        $revenue = Order::sum('total');
+        $revenue = (float) Order::where('payment_status', 'paid')
+            ->where('status', 'completed')
+            ->sum('total');
         $ordersCount = Order::count();
-        $customersCount = User::count();
+        $customersCount = User::where('is_admin', false)->count();
         $pendingVendorsCount = Vendor::where('verification_status', 'pending')->count();
         $productsCount = Product::count();
         $paymentsCount = Payment::count();

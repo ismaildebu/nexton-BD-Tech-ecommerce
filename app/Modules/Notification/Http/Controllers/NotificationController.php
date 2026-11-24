@@ -9,6 +9,7 @@ use App\Modules\Notification\Services\NotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class NotificationController extends Controller
 {
@@ -33,5 +34,16 @@ class NotificationController extends Controller
         );
 
         return redirect()->route('notifications.index')->with('status', __('Notification created.'));
+    }
+
+    public function markRead(Request $request, Notification $notification): RedirectResponse
+    {
+        Gate::authorize('update', $notification);
+
+        if ($notification->read_at === null) {
+            $notification->forceFill(['read_at' => now()])->save();
+        }
+
+        return redirect()->route('notifications.index')->with('status', __('Notification marked as read.'));
     }
 }

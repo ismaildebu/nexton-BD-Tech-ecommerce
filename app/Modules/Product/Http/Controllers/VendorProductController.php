@@ -3,12 +3,14 @@
 namespace App\Modules\Product\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Modules\Product\Http\Requests\StoreVendorProductRequest;
 use App\Modules\Product\Http\Requests\UpdateVendorProductRequest;
 use App\Modules\Product\Models\Brand;
 use App\Modules\Product\Models\Category;
 use App\Modules\Product\Models\Product;
 use App\Modules\Product\Services\ProductService;
+use App\Modules\Vendor\Models\Vendor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,12 +24,13 @@ class VendorProductController extends Controller
     {
         Gate::authorize('manage', Product::class);
 
-        $products = Product::where('vendor_id', $request->user()->vendor->id)
+        $vendor = $this->vendorFor($request->user());
+        $products = Product::where('vendor_id', $vendor->id)
             ->with('category')
             ->latest()
             ->paginate(15);
 
-        return view('vendor.products.index', ['products' => $products]);
+        return view('vendor.products.index', ['products' => $products, 'vendor' => $vendor]);
     }
 
     public function create(): View
@@ -40,7 +43,7 @@ class VendorProductController extends Controller
     public function store(StoreVendorProductRequest $request): RedirectResponse
     {
         $this->products->create(array_merge($request->validated(), [
-            'vendor_id' => $request->user()->vendor->id,
+            'vendor_id' => $this->vendorFor($request->user())->id,
             'status' => 'pending',
             'is_active' => false,
         ]));
@@ -58,9 +61,27 @@ class VendorProductController extends Controller
 
     public function update(UpdateVendorProductRequest $request, Product $product): RedirectResponse
     {
+        $requiresApproval = $product->status === 'approved';
         $this->products->update($product, $request->validated());
 
-        return redirect()->route('vendor.products.index')->with('status', __('Product updated.'));
+        $message = $requiresApproval
+            ? __('Product updated and hidden from the storefront pending admin re-approval.')
+            : __('Product updated.');
+
+        return redirect()->route('vendor.products.index')->with('status', $message);
+    }
+
+    public function destroy(Product $product): RedirectResponse
+    {
+        Gate::authorize('update', $product);
+        $this->products->archive($product);
+
+        return redirect()->route('vendor.products.index')->with('status', __('Product deactivated and hidden from the storefront.'));
+    }
+
+    private function vendorFor(User $user): Vendor
+    {
+        return Vendor::accessibleTo($user)->firstOrFail();
     }
 
     private function formData(): array

@@ -25,6 +25,16 @@ class LoginTest extends IdentityTestCase
         $this->assertNotNull($user->fresh()->last_login_at);
     }
 
+    public function test_admin_lands_on_admin_dashboard_after_login(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->post(route('login.store'), ['login' => $admin->email, 'password' => 'password'])
+            ->assertRedirect(route('admin.dashboard'));
+
+        $this->assertAuthenticatedAs($admin);
+    }
+
     public function test_user_can_login_with_phone(): void
     {
         $user = User::factory()->phoneOnly('+8801712345678')->create();
@@ -35,13 +45,38 @@ class LoginTest extends IdentityTestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_pending_verification_user_can_login(): void
+    public function test_pending_verification_user_is_redirected_without_authentication(): void
+    {
+        $user = User::factory()->unverified()->create(['status' => UserStatus::PendingVerification]);
+
+        $this->post(route('login.store'), ['login' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('verification.notice'));
+
+        $this->assertGuest();
+        $this->assertSame($user->id, session('verification_user_id'));
+        $this->assertNull($user->fresh()->last_login_at);
+    }
+
+    public function test_pending_user_with_a_verified_contact_is_activated_during_login(): void
     {
         $user = User::factory()->create(['status' => UserStatus::PendingVerification]);
 
-        $this->post(route('login.store'), ['login' => $user->email, 'password' => 'password']);
+        $this->post(route('login.store'), ['login' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('profile.edit'));
 
         $this->assertAuthenticatedAs($user);
+        $this->assertSame(UserStatus::Active, $user->fresh()->status);
+    }
+
+    public function test_active_user_without_a_verified_contact_cannot_login(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->post(route('login.store'), ['login' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('verification.notice'));
+
+        $this->assertGuest();
+        $this->assertSame($user->id, session('verification_user_id'));
     }
 
     public function test_invalid_credentials_are_rejected_with_the_same_message(): void

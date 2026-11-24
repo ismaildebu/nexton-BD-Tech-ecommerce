@@ -2,6 +2,8 @@
 
 namespace App\Modules\Product\Models;
 
+use App\Modules\Vendor\Enums\VendorStatus;
+use App\Modules\Vendor\Enums\VendorVerificationStatus;
 use App\Modules\Vendor\Models\Vendor;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +15,16 @@ class Product extends Model
     protected function casts(): array
     {
         return ['price' => 'decimal:2', 'is_active' => 'boolean'];
+    }
+
+    public function isPurchasable(): bool
+    {
+        $this->loadMissing('vendor');
+
+        return $this->status === 'approved'
+            && $this->is_active
+            && $this->vendor?->status === VendorStatus::Active
+            && $this->vendor?->verification_status === VendorVerificationStatus::Approved;
     }
 
     public function vendor(): BelongsTo

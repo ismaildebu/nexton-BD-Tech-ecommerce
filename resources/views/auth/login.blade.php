@@ -1,44 +1,45 @@
 @extends('layouts.guest')
 
 @section('title', __('Sign in'))
-@section('heading', __('Sign in'))
+@section('heading', __('Welcome back'))
 
 @section('content')
-    <form method="POST" action="{{ route('login.store') }}" class="space-y-4" novalidate x-data="{ show: false }">
+    <div class="mb-6 flex items-start gap-3">
+        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 1115 0v.25h-15v-.25z"/></svg>
+        </span>
+        <p class="pt-1 text-sm leading-6 text-slate-500">{{ __('Sign in to manage your orders, addresses and account details.') }}</p>
+    </div>
+
+    <form method="POST" action="{{ route('login.store') }}" class="space-y-5" novalidate
+        x-data="{ show: false, pending: false }" @submit="pending = true">
         @csrf
 
-        <x-form.input name="login" :label="__('Email or mobile number')" autocomplete="username" required />
+        <x-form.input name="login" :label="__('Email or mobile number')" autocomplete="username" required
+            placeholder="you@example.com or 01XXXXXXXXX" />
 
-        <div>
-            <label for="password" class="block text-sm font-medium text-gray-800">{{ __('Password') }}</label>
-            <div class="relative mt-1">
-                <input id="password" name="password" required autocomplete="current-password"
-                    x-bind:type="show ? 'text' : 'password'" type="password"
-                    class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-16 text-gray-900 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700/30">
-                <button type="button" x-on:click="show = !show"
-                    class="absolute inset-y-0 right-0 px-3 text-sm text-gray-600 hover:text-teal-800"
-                    x-text="show ? '{{ __('Hide') }}' : '{{ __('Show') }}'">{{ __('Show') }}</button>
-            </div>
-            @error('password')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-            @enderror
+        <div class="relative">
+            <x-form.input name="password" type="password" :label="__('Password')" autocomplete="current-password" required
+                class="pr-20" x-bind:type="show ? 'text' : 'password'" />
+            <button type="button" x-on:click="show = !show" :aria-pressed="show.toString()" aria-controls="password"
+                class="absolute right-1 top-[27px] flex h-11 items-center rounded-lg px-3 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20"
+                x-text="show ? @js(__('Hide')) : @js(__('Show'))">{{ __('Show') }}</button>
         </div>
 
-        <div class="flex items-center justify-between text-sm">
-            <label class="flex items-center gap-2">
-                <input type="checkbox" name="remember" value="1" class="rounded border-gray-300 text-teal-700 focus:ring-teal-700">
-                {{ __('Keep me signed in') }}
-            </label>
-            <a href="{{ route('password.request') }}" class="text-teal-800 hover:underline">{{ __('Forgot password?') }}</a>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <x-form.checkbox name="remember" :label="__('Keep me signed in')" />
+            <a href="{{ route('password.request') }}" class="ui-link text-sm">{{ __('Forgot password?') }}</a>
         </div>
 
-        <button type="submit" class="w-full rounded-md bg-teal-700 px-4 py-2 font-medium text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-700/40">
-            {{ __('Sign in') }}
-        </button>
-
-        <p class="text-center text-sm text-gray-600">
-            {{ __('New here?') }}
-            <a href="{{ route('register') }}" class="font-medium text-teal-800 hover:underline">{{ __('Create account') }}</a>
-        </p>
+        <x-ui.button type="submit" class="w-full" :disabled="false" x-bind:disabled="pending" :aria-busy="false"
+            x-bind:aria-busy="pending ? 'true' : 'false'">
+            <span x-show="pending" x-cloak class="ui-spinner" aria-hidden="true"></span>
+            <span x-text="pending ? @js(__('Signing in...')) : @js(__('Sign in'))">{{ __('Sign in') }}</span>
+        </x-ui.button>
     </form>
+
+    <div class="mt-6 border-t border-slate-100 pt-5 text-center text-sm text-slate-500">
+        {{ __('New here?') }}
+        <a href="{{ route('register') }}" class="ui-link ml-1">{{ __('Create an account') }}</a>
+    </div>
 @endsection

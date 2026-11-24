@@ -1,101 +1,119 @@
 @extends('layouts.frontend')
-@section('title', 'Catalog & Products - NEXTON')
+@section('title', __('Product Catalog - :store', ['store' => config('app.name')]))
 
 @section('content')
-<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header with Search & Filter Bar -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-[#181F2C] tracking-tight">{{ __('Product Catalog') }}</h1>
-            <p class="text-xs text-slate-400 mt-1">{{ __('Explore our authentic electronics, living essentials, and tech accessories.') }}</p>
-        </div>
+@php
+    $productIcons = [
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16v11H4zM8 20h8M12 16v4"/>',
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M4 14v-2a8 8 0 0116 0v2M4 13H3v6h4v-6H4zm16 0h1v6h-4v-6h3z"/>',
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10a3 3 0 013 3v5a3 3 0 01-3 3H7a3 3 0 01-3-3v-5a3 3 0 013-3zM8 10v5m-2-2.5h4M16 11h.01M18 13h.01"/>',
+        '<rect x="7" y="2" width="10" height="20" rx="2"/><path stroke-linecap="round" d="M11 18h2"/>',
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M4 7h4l2-2h4l2 2h4v13H4z"/><circle cx="12" cy="13" r="4"/>',
+        '<circle cx="12" cy="12" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/>',
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-6 4 4 3-3 5 5M3 21h18"/>',
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16M6 12V7h12v5M6 12v7h12v-7M9 19v2h6v-2"/>',
+    ];
+@endphp
 
-        <!-- Search Form -->
-        <form method="GET" action="{{ route('products.index') }}" class="flex items-center gap-2 max-w-md w-full">
-            <div class="relative flex-1">
-                <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products...') }}" 
-                       class="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#FF5B22]/30 focus:border-[#FF5B22] shadow-2xs">
-                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
+<div class="ui-page">
+    <x-ui.page-header
+        :title="__('Product catalog')"
+        :description="__('Explore authentic electronics, living essentials, and tech accessories from verified merchants.')"
+    />
+
+    <x-ui.card class="mb-6">
+        <form method="GET" action="{{ route('products.index') }}" role="search" class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            @if (request()->filled('category'))
+                <input type="hidden" name="category" value="{{ request('category') }}">
+            @endif
+            <div class="relative">
+                <label for="catalog-search" class="ui-label">{{ __('Search products') }}</label>
+                <input id="catalog-search" type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products...') }}" class="pl-11">
+                <svg class="pointer-events-none absolute left-4 top-[2.65rem] h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
-            <button type="submit" class="px-5 py-2.5 rounded-full bg-[#181F2C] text-white text-xs font-bold hover:bg-black transition shadow-xs">
-                {{ __('Filter') }}
-            </button>
+            <x-ui.button type="submit" class="w-full sm:w-auto">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16l-6 7v5l-4 2v-7L4 5z"/></svg>
+                {{ __('Apply filters') }}
+            </x-ui.button>
         </form>
-    </div>
+    </x-ui.card>
+
+    <nav class="ui-scrollbar mb-7 flex items-center gap-2 overflow-x-auto pb-2" aria-label="{{ __('Product categories') }}">
+        <a href="{{ route('products.index', array_filter(['q' => request('q')])) }}" @class(['inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20', 'bg-ink-900 text-white hover:bg-ink-800' => ! request()->filled('category'), 'border border-slate-200 bg-white text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700' => request()->filled('category')]) @if (! request()->filled('category')) aria-current="true" @endif>
+            {{ __('All') }}
+        </a>
+        @foreach ($categories as $category)
+            <a href="{{ route('products.index', array_filter(['category' => $category->id, 'q' => request('q')])) }}" @class(['inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20', 'bg-ink-900 text-white hover:bg-ink-800' => (string) request('category') === (string) $category->id, 'border border-slate-200 bg-white text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700' => (string) request('category') !== (string) $category->id]) @if ((string) request('category') === (string) $category->id) aria-current="true" @endif>
+                {{ $category->name }}
+            </a>
+        @endforeach
+    </nav>
 
     @if ($products->isEmpty())
-        <div class="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-sm">
-            <div class="text-4xl mb-3">🔍</div>
-            <h2 class="text-lg font-bold text-slate-800">{{ __('No products found') }}</h2>
-            <p class="text-xs text-slate-400 mt-1 mb-6">{{ __('Try searching for a different keyword or view all items.') }}</p>
-            <a href="{{ route('products.index') }}" class="inline-flex px-6 py-2.5 rounded-full bg-[#FF5B22] text-white text-xs font-bold">
-                {{ __('Reset Search') }}
-            </a>
-        </div>
+        <x-ui.card :padding="false">
+            <x-ui.empty-state :title="__('No products found')" :description="__('Try a different keyword or browse the full catalog.')">
+                <x-slot:icon>
+                    <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </x-slot:icon>
+                <x-slot:action>
+                    <x-ui.button :href="route('products.index')">{{ __('Reset search') }}</x-ui.button>
+                </x-slot:action>
+            </x-ui.empty-state>
+        </x-ui.card>
     @else
-        <!-- 4-Column Product Grid (Image 2 Style) -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-10">
+        <div class="mb-3 flex items-center justify-between gap-3 text-sm text-slate-500">
+            <p>{{ __('Showing :from–:to of :total products', ['from' => $products->firstItem(), 'to' => $products->lastItem(), 'total' => $products->total()]) }}</p>
+            <span class="hidden text-xs sm:inline">{{ __('Prices in BDT') }}</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-6 lg:grid-cols-4">
             @foreach ($products as $index => $product)
                 @php
-                    $mockIcons = ['💻', '🎧', '🎮', '⌚', '📱', '📷', '👟', '🛋️'];
-                    $prodIcon = $mockIcons[$index % count($mockIcons)];
+                    $stock = (int) ($product->inventory?->quantity ?? 0);
+                    $available = $stock > 0;
                 @endphp
-                <div class="group bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between relative" x-data="{ inWishlist: false }">
-                    <!-- Wishlist Heart Button -->
-                    <button @click="inWishlist = !inWishlist" class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 shadow-xs transition">
-                        <svg class="w-4 h-4 transition" :class="inWishlist ? 'fill-rose-500 text-rose-500' : 'fill-none'" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                    </button>
+                <x-ui.card :padding="false" class="group relative h-full overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="flex h-full flex-col">
+                    <form method="POST" action="{{ route('wishlist.store') }}" class="absolute right-4 top-4 z-10">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <button type="submit" class="ui-icon-btn border border-slate-200 bg-white/95 shadow-sm hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500" aria-label="{{ __('Save to wishlist') }}" title="{{ __('Save to wishlist') }}">
+                            <svg class="h-5 w-5 transition {{ in_array($product->id, $wishlistedProductIds, true) ? 'fill-rose-500 text-rose-500' : 'fill-none' }}" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        </button>
+                    </form>
 
-                    <!-- Image Link -->
-                    <a href="{{ route('products.show', $product) }}" class="block">
-                        <div class="w-full h-44 sm:h-52 rounded-2xl bg-[#F4F5F7] flex items-center justify-center overflow-hidden mb-4 group-hover:scale-[1.02] transition duration-300">
-                            <span class="text-5xl sm:text-6xl">{{ $prodIcon }}</span>
+                    <a href="{{ route('products.show', $product) }}" class="block rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-brand-500/30" aria-label="{{ $product->name }}">
+                        <div class="flex h-44 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-50 to-accent-50/60 text-accent-500 transition duration-300 group-hover:from-accent-50 group-hover:to-brand-50 sm:h-52">
+                            <svg class="h-16 w-16 transition duration-300 group-hover:scale-105 sm:h-20 sm:w-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">{!! $productIcons[$index % count($productIcons)] !!}</svg>
                         </div>
                     </a>
 
-                    <!-- Details -->
-                    <div>
-                        <div class="flex items-baseline gap-2 mb-1">
-                            <span class="font-extrabold text-slate-900 text-base sm:text-lg">৳ {{ number_format($product->price, 2) }}</span>
-                            @if ($product->price > 500)
-                                <span class="text-xs text-slate-400 line-through">৳ {{ number_format($product->price * 1.2, 0) }}</span>
-                            @endif
-                        </div>
-                        <a href="{{ route('products.show', $product) }}" class="block">
-                            <h3 class="font-bold text-slate-800 text-sm hover:text-[#FF5B22] transition truncate leading-snug">
-                                {{ $product->name }}
-                            </h3>
+                    <div class="flex flex-1 flex-col p-4 sm:p-5">
+                        <p class="mb-1 text-base font-extrabold text-slate-900 sm:text-lg">৳ {{ number_format($product->price, 2) }}</p>
+                        <a href="{{ route('products.show', $product) }}" class="rounded-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20">
+                            <h2 class="break-words text-sm font-bold leading-6 text-slate-800 transition group-hover:text-brand-700">{{ $product->name }}</h2>
                         </a>
-                        <p class="text-xs text-slate-400 mt-0.5 truncate">
-                            {{ $product->category->name ?? 'Nexton Marketplace' }}
-                        </p>
-                    </div>
+                        <p class="mt-1 text-xs text-slate-500">{{ $product->category->name ?? __('Nexton Marketplace') }}</p>
 
-                    <!-- Quick Add Button -->
-                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> In Stock
-                        </span>
-                        <form method="POST" action="{{ route('cart.store') }}">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-[#FF5B22] hover:text-white transition shadow-2xs" title="Add to Cart">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                            </button>
-                        </form>
+                        <div class="mt-auto flex flex-col gap-3 border-t border-slate-100 pt-4">
+                            <x-ui.badge :tone="$available ? 'success' : 'danger'">{{ $available ? __('In stock') : __('Out of Stock') }}</x-ui.badge>
+                            <form method="POST" action="{{ route('cart.store') }}">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <x-ui.button type="submit" :disabled="! $available" class="w-full">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                    {{ __('Add to cart') }}
+                                </x-ui.button>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                    </div>
+                </x-ui.card>
             @endforeach
         </div>
 
-        <div class="mt-8 flex justify-center">
+        <div class="ui-pagination mt-8 flex justify-center">
             {{ $products->links() }}
         </div>
     @endif

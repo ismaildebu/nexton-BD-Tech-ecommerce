@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Modules\Product\Models\Product;
 use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Enums\VendorVerificationStatus;
+use App\Modules\Vendor\Models\Vendor;
 
 class ProductPolicy
 {
@@ -19,14 +20,14 @@ class ProductPolicy
         return true;
     }
 
-    /** Vendor has an approved profile and is not suspended/blocked. */
+    /** Vendor has an active, approved profile and an active owner or staff membership. */
     public function manage(User $user): bool
     {
-        $vendor = $user->vendor;
+        $vendor = Vendor::accessibleTo($user)->first();
 
         return $vendor !== null
             && $vendor->verification_status === VendorVerificationStatus::Approved
-            && ! in_array($vendor->status, [VendorStatus::Suspended, VendorStatus::Blocked], true);
+            && $vendor->status === VendorStatus::Active;
     }
 
     public function create(User $user): bool
@@ -36,7 +37,8 @@ class ProductPolicy
 
     public function update(User $user, Product $product): bool
     {
-        return $this->manage($user) && $user->vendor->id === $product->vendor_id;
+        return $this->manage($user)
+            && Vendor::accessibleTo($user)->whereKey($product->vendor_id)->exists();
     }
 
     public function delete(User $user, Product $product): bool

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Shipping\Http\Requests\CreateShippingRequest;
 use App\Modules\Shipping\Models\Shipping;
 use App\Modules\Shipping\Services\ShippingService;
+use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,11 +24,15 @@ class ShippingController extends Controller
 
     public function store(CreateShippingRequest $request): RedirectResponse
     {
-        $this->shipping->create(
-            $request->integer('order_id'),
-            $request->input('carrier'),
-            $request->input('tracking_number')
-        );
+        try {
+            $this->shipping->create(
+                $request->integer('order_id'),
+                $request->input('carrier'),
+                $request->input('tracking_number')
+            );
+        } catch (DomainException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
 
         return redirect()->route('shipping.index')->with('status', __('Shipment created.'));
     }

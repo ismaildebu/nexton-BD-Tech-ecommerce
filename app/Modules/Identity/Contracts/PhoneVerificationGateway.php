@@ -4,16 +4,15 @@ namespace App\Modules\Identity\Contracts;
 
 use App\Models\User;
 
-/**
- * Integration point for phone verification.
- *
- * No SMS provider is configured yet. Bind a real implementation in
- * IdentityServiceProvider once a provider is chosen. Implementations must
- * never store plaintext verification codes.
- */
 interface PhoneVerificationGateway
 {
-    public function sendCode(User $user): void;
+    public const PURPOSE_VERIFICATION = 'verification';
 
-    public function verify(User $user, string $code): bool;
+    public const PURPOSE_PASSWORD_RESET = 'password_reset';
+
+    public function sendCode(User $user, string $purpose): void;
+
+    public function verify(User $user, string $code, string $purpose): bool;
+
+    public function invalidate(User $user, string $purpose): void;
 }

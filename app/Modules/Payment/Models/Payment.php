@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
-    protected $fillable = ['order_id', 'amount', 'gateway', 'status', 'transaction_id'];
+    protected $fillable = ['order_id', 'vendor_id', 'amount', 'gateway', 'status', 'transaction_id'];
 
     protected function casts(): array
     {
@@ -18,5 +18,10 @@ class Payment extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Vendor\Models\Vendor::class);
     }
 }

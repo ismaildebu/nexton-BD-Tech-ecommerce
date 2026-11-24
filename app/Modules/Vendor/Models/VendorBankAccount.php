@@ -11,9 +11,10 @@ class VendorBankAccount extends Model
 {
     protected $fillable = [
         'vendor_id', 'account_holder_name', 'bank_name', 'branch_name',
-        'account_number_encrypted', 'account_number_last_four', 'routing_number',
-        'account_type', 'verification_status', 'verified_by', 'verified_at', 'is_default',
+        'account_number', 'routing_number', 'account_type', 'is_default',
     ];
+
+    protected $hidden = ['account_number_encrypted'];
 
     protected function casts(): array
     {
@@ -30,8 +31,14 @@ class VendorBankAccount extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
-    public function setAccountNumberAttribute(string $value): void
+    public function setAccountNumberAttribute(?string $value): void
     {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            throw new \InvalidArgumentException(__('The account number is required.'));
+        }
+
         $this->attributes['account_number_encrypted'] = Crypt::encryptString($value);
         $this->attributes['account_number_last_four'] = substr($value, -4);
     }

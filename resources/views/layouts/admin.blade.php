@@ -3,197 +3,118 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', __('Dashboard')) - {{ config('app.name') }}</title>
+    <title>@yield('title', __('Control panel')) · {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="min-h-screen bg-[#F4F6F9] text-[#1e293b] antialiased" x-data="{ sidebarOpen: true, mobileMenu: false }">
-    <div class="flex min-h-screen">
-        <!-- Sidebar Backdrop for mobile -->
-        <div x-show="mobileMenu" @click="mobileMenu = false" class="fixed inset-0 z-40 bg-black/50 md:hidden" x-cloak></div>
+<body class="min-h-screen bg-slate-50 text-slate-900" x-data="{ mobileOpen: false }" x-effect="document.body.style.overflow = mobileOpen ? 'hidden' : ''" @ui:dismiss.window="if ($event.target.id === 'admin-navigation') { mobileOpen = false; $nextTick(() => $refs.adminDrawerOpen?.focus()); }">
+    <a href="#admin-main" class="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-semibold focus:not-sr-only focus:fixed focus:left-4 focus:top-4">{{ __('Skip to content') }}</a>
 
-        <!-- Sidebar -->
-        <aside :class="mobileMenu ? 'translate-x-0' : '-translate-x-full md:translate-x-0'" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-[#181F2C] text-slate-300 flex flex-col transition-transform duration-200 ease-in-out border-r border-slate-800">
-            <!-- Brand -->
-            <div class="h-16 px-6 flex items-center justify-between border-b border-slate-800/80">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#6852D9] to-[#8c7ae6] flex items-center justify-center text-white shadow-md shadow-[#6852D9]/30">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="font-extrabold text-white text-lg tracking-tight">NEXTON</span>
-                        <span class="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold leading-none">Commerce OS</span>
-                    </div>
-                </a>
-                <button @click="mobileMenu = false" class="md:hidden text-slate-400 hover:text-white">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    <div class="flex min-h-screen">
+        <div x-show="mobileOpen" @click="mobileOpen = false; $nextTick(() => $refs.adminDrawerOpen.focus())" class="fixed inset-0 z-40 bg-ink-900/60 backdrop-blur-sm md:hidden" x-cloak aria-hidden="true"></div>
+
+        <aside id="admin-navigation" x-ref="adminDrawer" tabindex="-1" :role="mobileOpen ? 'dialog' : undefined" :aria-modal="mobileOpen ? 'true' : undefined" aria-label="{{ __('Admin navigation') }}" :class="mobileOpen ? 'visible translate-x-0' : 'invisible -translate-x-full md:visible md:translate-x-0'" class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-white/10 bg-ink-900 text-slate-300 transition-transform duration-200 md:static">
+            <div class="flex h-20 items-center justify-between border-b border-white/10 px-5">
+                <x-ui.brand inverse :href="route('admin.dashboard')" />
+                <button x-ref="adminDrawerClose" type="button" @click="mobileOpen = false; $nextTick(() => $refs.adminDrawerOpen.focus())" class="ui-icon-btn text-slate-400 hover:bg-white/10 hover:text-white md:hidden" aria-label="{{ __('Close navigation') }}">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <!-- Nav -->
-            <nav class="flex-1 px-3 py-4 space-y-6 overflow-y-auto text-xs font-semibold">
-                <div>
-                    <div class="px-3 mb-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">Navigation</div>
-                    <div class="space-y-1">
-                        <a href="{{ route('admin.dashboard') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg transition {{ request()->routeIs('admin.dashboard') ? 'bg-[#6852D9] text-white font-medium shadow-sm' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-4 h-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                                <span>{{ __('Dashboard') }}</span>
-                            </div>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded-full {{ request()->routeIs('admin.dashboard') ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-400' }}">Live</span>
-                        </a>
-                    </div>
-                </div>
+            @php
+                $groups = [
+                    __('Navigation') => [
+                        ['label' => __('Dashboard'), 'url' => route('admin.dashboard'), 'pattern' => 'admin.dashboard', 'icon' => 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'],
+                    ],
+                    __('E-commerce') => [
+                        ['label' => __('Products'), 'url' => route('admin.products.index'), 'pattern' => 'admin.products.*', 'icon' => 'M20 7l-8-4-8 4m16 0v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4'],
+                        ['label' => __('Inventory'), 'url' => route('admin.inventory.index'), 'pattern' => 'admin.inventory.*', 'icon' => 'M4 7h16M4 7l2-4h12l2 4M5 7v14h14V7M9 11h6'],
+                        ['label' => __('Categories'), 'url' => route('admin.categories.index'), 'pattern' => 'admin.categories.*', 'icon' => 'M3 7h6l2 2h10v10H3V7z'],
+                        ['label' => __('Brands'), 'url' => route('admin.brands.index'), 'pattern' => 'admin.brands.*', 'icon' => 'M3 12h18M12 3v18M5 5l14 14M19 5L5 19'],
+                        ['label' => __('Orders'), 'url' => route('admin.orders.index'), 'pattern' => 'admin.orders.*', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
+                        ['label' => __('Payments'), 'url' => route('admin.payments.index'), 'pattern' => 'admin.payments.*', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z'],
+                        ['label' => __('Shipping'), 'url' => route('admin.shipping.index'), 'pattern' => 'admin.shipping.*', 'icon' => 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'],
+                        ['label' => __('Coupons'), 'url' => route('admin.coupons.index'), 'pattern' => 'admin.coupons.*', 'icon' => 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'],
+                    ],
+                    __('Marketplace & partners') => [
+                        ['label' => __('Customers'), 'url' => route('admin.customers.index'), 'pattern' => 'admin.customers.*', 'icon' => 'M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M14 4a4 4 0 010 8M10 11a4 4 0 100-8 4 4 0 000 8z'],
+                        ['label' => __('Vendors'), 'url' => route('admin.vendors.index'), 'pattern' => 'admin.vendors.*', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1'],
+                        ['label' => __('Commissions'), 'url' => route('admin.commissions.index'), 'pattern' => 'admin.commissions.*', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+                        ['label' => __('Settlements'), 'url' => route('admin.settlements.index'), 'pattern' => 'admin.settlements.*', 'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'],
+                        ['label' => __('Subscriptions'), 'url' => route('admin.subscriptions.index'), 'pattern' => 'admin.subscriptions.*', 'icon' => 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z'],
+                    ],
+                    __('Content & system') => [
+                        ['label' => __('Reviews'), 'url' => route('admin.reviews.index'), 'pattern' => 'admin.reviews.*', 'icon' => 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z'],
+                        ['label' => __('CMS pages'), 'url' => route('admin.cms.index'), 'pattern' => 'admin.cms.*', 'icon' => 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z'],
+                        ['label' => __('Notifications'), 'url' => route('admin.notifications.index'), 'pattern' => 'admin.notifications.*', 'icon' => 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1'],
+                        ['label' => __('Wishlist'), 'url' => route('admin.wishlist.index'), 'pattern' => 'admin.wishlist.*', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'],
+                    ],
+                ];
+            @endphp
 
-                <div>
-                    <div class="px-3 mb-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">E-Commerce</div>
-                    <div class="space-y-1">
-                        <a href="{{ route('admin.products.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.products.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                            <span>{{ __('Products') }}</span>
-                        </a>
-                        <a href="{{ route('admin.inventory.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.inventory.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            <span>{{ __('Inventory') }}</span>
-                        </a>
-                        <a href="{{ route('admin.orders.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.orders.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                            <span>{{ __('Orders') }}</span>
-                        </a>
-                        <a href="{{ route('admin.payments.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.payments.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                            <span>{{ __('Payments') }}</span>
-                        </a>
-                        <a href="{{ route('admin.shipping.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.shipping.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                            <span>{{ __('Shipping') }}</span>
-                        </a>
-                        <a href="{{ route('admin.coupons.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.coupons.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                            <span>{{ __('Coupons') }}</span>
-                        </a>
+            <nav class="ui-scrollbar flex-1 space-y-5 overflow-y-auto px-3 py-5">
+                @foreach ($groups as $label => $items)
+                    <div>
+                        <p class="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ $label }}</p>
+                        <div class="space-y-1">
+                            @foreach ($items as $item)
+                                @php($active = request()->routeIs($item['pattern']))
+                                <a href="{{ $item['url'] }}" @if ($active) aria-current="page" @endif class="{{ $active ? 'bg-accent-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10 hover:text-white' }} ui-sidebar-link">
+                                    <svg class="h-4 w-4 shrink-0 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/></svg>
+                                    <span>{{ $item['label'] }}</span>
+                                    @if ($item['pattern'] === 'admin.dashboard')
+                                        <span class="ml-auto rounded-full bg-emerald-400/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-300">{{ __('Live') }}</span>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
-
-                <div>
-                    <div class="px-3 mb-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">Marketplace & Partners</div>
-                    <div class="space-y-1">
-                        <a href="{{ route('admin.customers.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.customers.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                            <span>{{ __('Customers') }}</span>
-                        </a>
-                        <a href="{{ route('admin.vendors.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.vendors.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                            <span>{{ __('Vendors') }}</span>
-                        </a>
-                        <a href="{{ route('admin.commissions.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.commissions.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>{{ __('Commissions') }}</span>
-                        </a>
-                        <a href="{{ route('admin.settlements.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.settlements.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                            <span>{{ __('Settlements') }}</span>
-                        </a>
-                        <a href="{{ route('admin.subscriptions.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.subscriptions.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
-                            <span>{{ __('Subscriptions') }}</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="px-3 mb-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">Content & System</div>
-                    <div class="space-y-1">
-                        <a href="{{ route('admin.reviews.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.reviews.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                            <span>{{ __('Reviews') }}</span>
-                        </a>
-                        <a href="{{ route('admin.cms.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.cms.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-                            <span>{{ __('CMS Pages') }}</span>
-                        </a>
-                        <a href="{{ route('admin.notifications.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('admin.notifications.*') ? 'bg-slate-800 text-white font-medium' : 'hover:bg-slate-800 hover:text-white' }}">
-                            <svg class="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                            <span>{{ __('Notifications') }}</span>
-                        </a>
-                    </div>
-                </div>
+                @endforeach
             </nav>
 
-            <!-- User Footer in Sidebar -->
-            <div class="p-3 border-t border-slate-800/80 flex items-center justify-between bg-slate-900/50">
-                <div class="flex items-center gap-2.5 overflow-hidden">
-                    <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-slate-200 shrink-0 text-xs">
-                        {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
-                    </div>
-                    <div class="truncate text-xs">
-                        <div class="font-medium text-white truncate">{{ auth()->user()->name ?? 'Admin' }}</div>
-                        <div class="text-[10px] text-slate-400 truncate">Administrator</div>
+            <div class="border-t border-white/10 p-4">
+                <div class="mb-3 flex items-center gap-3 rounded-xl bg-white/5 p-3">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-500 text-sm font-bold text-white">{{ mb_strtoupper(mb_substr(auth()->user()->name ?? 'A', 0, 1)) }}</span>
+                    <div class="min-w-0">
+                        <p class="truncate text-sm font-semibold text-white">{{ auth()->user()->name ?? __('Admin') }}</p>
+                        <p class="truncate text-xs text-slate-400">{{ __('Administrator') }}</p>
                     </div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" title="Logout" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <button type="submit" class="ui-sidebar-link w-full text-slate-400 hover:bg-rose-500/10 hover:text-rose-300">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        {{ __('Sign out') }}
                     </button>
                 </form>
             </div>
         </aside>
 
-        <!-- Main Column -->
-        <div class="flex-1 flex flex-col min-w-0">
-            <!-- Topbar -->
-            <header class="sticky top-0 z-30 h-16 bg-white border-b border-[#E8EBF0] px-4 md:px-8 flex items-center justify-between">
+        <div class="flex min-w-0 flex-1 flex-col">
+            <header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:px-8">
                 <div class="flex items-center gap-3">
-                    <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <button x-ref="adminDrawerOpen" type="button" @click="mobileOpen = true; $nextTick(() => $refs.adminDrawer.focus())" class="ui-icon-btn md:hidden" aria-label="{{ __('Open navigation') }}" aria-controls="admin-navigation" :aria-expanded="mobileOpen.toString()">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    <div>
-                        <h1 class="text-lg font-bold text-slate-800 leading-tight">@yield('title', __('Dashboard'))</h1>
-                        <div class="text-[11px] text-slate-400 hidden sm:block">Nexton OS &bull; Control Panel</div>
+                    <div class="md:hidden"><x-ui.brand compact :href="route('admin.dashboard')" /></div>
+                    <div class="hidden md:block">
+                        <p class="text-sm font-bold text-slate-900">{{ __('Control panel') }}</p>
+                        <p class="mt-0.5 text-xs text-slate-500">@yield('title', __('Admin workspace'))</p>
                     </div>
                 </div>
-
-                <!-- Right controls -->
                 <div class="flex items-center gap-3">
-                    <!-- Search input -->
-                    <div class="relative hidden sm:block w-64">
-                        <input type="text" placeholder="{{ __('Quick search...') }}" class="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6852D9]/30 focus:border-[#6852D9] transition">
-                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </div>
-
-                    <!-- Store link -->
-                    <a href="{{ url('/') }}" target="_blank" class="text-xs font-semibold px-3 py-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                        <span class="hidden md:inline">{{ __('View Store') }}</span>
+                    <a href="{{ url('/') }}" target="_blank" rel="noopener" class="ui-btn ui-btn-outline ui-btn-sm">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        <span class="hidden sm:inline">{{ __('View store') }}</span>
                     </a>
-
-                    <!-- User menu -->
-                    <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6852D9] to-indigo-400 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-                            {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
-                        </div>
-                        <span class="text-xs font-semibold text-slate-700 hidden lg:inline">{{ auth()->user()->name ?? 'Admin' }}</span>
-                    </div>
+                    <span class="hidden h-9 w-9 items-center justify-center rounded-full bg-accent-100 text-xs font-bold text-accent-700 sm:flex">{{ mb_strtoupper(mb_substr(auth()->user()->name ?? 'A', 0, 1)) }}</span>
                 </div>
             </header>
 
-            <!-- Page Body -->
-            <main class="flex-1 p-4 md:p-8">
-                @if (session('status'))
-                    <div role="status" class="mb-6 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs font-medium text-emerald-800 flex items-center gap-2.5">
-                        <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                        <span>{{ session('status') }}</span>
-                    </div>
-                @endif
+            <main id="admin-main" class="mx-auto w-full max-w-[100rem] flex-1 px-4 py-7 sm:px-6 md:py-9 lg:px-8">
+                @include('layouts.partials.flash')
                 @yield('content')
             </main>
         </div>

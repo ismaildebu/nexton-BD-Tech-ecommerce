@@ -4,6 +4,7 @@ namespace App\Modules\Vendor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Product\Models\Product;
+use App\Modules\Vendor\Models\Vendor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -11,7 +12,7 @@ class VendorDashboardController extends Controller
 {
     public function index(Request $request): View
     {
-        $vendor = $request->user()->vendor;
+        $vendor = Vendor::accessibleTo($request->user())->first();
         $stats = [];
         if ($vendor) {
             $stats = [

@@ -9,6 +9,7 @@ use App\Modules\Commission\Services\CommissionService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use DomainException;
 
 class CommissionController extends Controller
 {
@@ -23,12 +24,18 @@ class CommissionController extends Controller
 
     public function store(CreateCommissionRequest $request): RedirectResponse
     {
-        $this->commissions->record(
-            $request->integer('vendor_id'),
-            (float) $request->input('amount'),
-            (float) ($request->input('rate') ?? 0)
-        );
+        try {
+            $this->commissions->record(
+                $request->integer('vendor_id'),
+                $request->filled('amount') ? (float) $request->input('amount') : null,
+                $request->filled('rate') ? (float) $request->input('rate') : null,
+                $request->filled('order_id') ? $request->integer('order_id') : null,
+                $request->user(),
+            );
+        } catch (DomainException $exception) {
+            return back()->withInput()->with('error', $exception->getMessage());
+        }
 
-        return redirect()->route('commissions.index')->with('status', __('Commission recorded.'));
+        return redirect()->route('admin.commissions.index')->with('status', __('Commission recorded.'));
     }
 }

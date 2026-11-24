@@ -55,6 +55,7 @@ class UserFactory extends Factory
             'email' => null,
             'email_verified_at' => null,
             'phone' => $phone ?? '+8801'.fake()->unique()->numerify('7########'),
+            'phone_verified_at' => now(),
         ]);
     }
 

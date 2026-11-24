@@ -1,8 +1,10 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import { appearancePreview } from './appearance-preview';
 
 window.Alpine = Alpine;
+window.appearancePreview = appearancePreview;
 
 Alpine.start();
 

@@ -3,25 +3,25 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', config('app.name', 'NEXTON Store'))</title>
+    <title>@yield('title', $siteSettings->site_name)</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @include('layouts.partials.theme')
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col" x-data="{ mobileDrawer: false }" x-effect="document.body.style.overflow = mobileDrawer ? 'hidden' : ''" @ui:dismiss.window="if ($event.target.id === 'storefront-navigation') { mobileDrawer = false; $nextTick(() => $refs.storeDrawerOpen?.focus()); }">
+<body class="site-body min-h-screen antialiased flex flex-col" data-header-style="{{ $siteSettings->header_style }}" data-footer-style="{{ $siteSettings->footer_style }}" x-data="{ mobileDrawer: false }" x-effect="document.body.style.overflow = mobileDrawer ? 'hidden' : ''" @resize.window="if (innerWidth >= 1024) mobileDrawer = false" @ui:dismiss.window="if ($event.target.id === 'storefront-navigation') { mobileDrawer = false; $nextTick(() => $refs.storeDrawerOpen?.focus()); }">
     <a href="#storefront-main" class="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-semibold text-slate-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">{{ __('Skip to content') }}</a>
-    <div class="bg-ink-900 py-2 px-4 text-center text-[11px] font-medium text-white">
-        <span>{{ __('Free nationwide delivery on orders over ৳2,500.') }}</span>
-        <a href="{{ route('products.index') }}" class="underline ml-2 text-brand-300 hover:text-brand-200">{{ __('Shop now') }}</a>
-    </div>
+    @if ($siteSettings->announcement)
+        <div class="site-announcement px-4 py-2 text-center text-[11px] font-medium text-white">
+            <span>{{ $siteSettings->announcement }}</span>
+            <a href="{{ route('products.index') }}" class="ml-2 underline text-brand-300 hover:text-brand-200">{{ __('Shop now') }}</a>
+        </div>
+    @endif
 
     <!-- Main Navigation Header (Image 2 ESTORE Style) -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 transition shadow-xs">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="flex h-20 items-center justify-between gap-4">
+    <header class="site-header sticky top-0 z-40 backdrop-blur-md transition shadow-xs">
+        <div class="ui-container">
+            <div class="site-header-inner flex items-center justify-between gap-4">
                 <!-- Left Nav Links (Desktop) -->
-                <nav class="hidden lg:flex items-center gap-7 text-xs font-semibold text-slate-600">
+                <nav class="store-desktop-nav hidden lg:flex items-center gap-7 text-xs font-semibold text-slate-600">
                     <a href="{{ route('products.index') }}" class="hover:text-brand-500 transition {{ request()->routeIs('products.*') ? 'text-brand-500' : '' }}">{{ __('Catalog') }}</a>
                     <a href="{{ url('/') }}#popular" class="hover:text-brand-500 transition">{{ __('Popular') }}</a>
                     <a href="{{ url('/') }}#categories" class="hover:text-brand-500 transition">{{ __('Categories') }}</a>
@@ -30,21 +30,24 @@
                 </nav>
 
                 <!-- Mobile Hamburger Button -->
-                <button x-ref="storeDrawerOpen" type="button" @click="mobileDrawer = true; $nextTick(() => $refs.storeDrawerClose.focus())" class="ui-icon-btn lg:hidden" aria-label="{{ __('Open navigation') }}" aria-controls="storefront-navigation" :aria-expanded="mobileDrawer.toString()">
+                <button x-ref="storeDrawerOpen" type="button" @click="mobileDrawer = true; $nextTick(() => $refs.storeDrawerClose.focus())" class="store-mobile-toggle ui-icon-btn lg:hidden" aria-label="{{ __('Open navigation') }}" aria-controls="storefront-navigation" :aria-expanded="mobileDrawer.toString()">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                 </button>
 
                 <!-- Center Logo (Bold Minimalist ESTORE style) -->
-                <div class="flex shrink-0 items-center">
-                    <a href="{{ url('/') }}" class="flex items-center gap-2">
-                        <span class="text-2xl font-black tracking-tighter text-ink-900">NEXT<span class="text-brand-500">ON</span></span>
+                <div class="store-logo flex min-w-0 shrink-0 items-center">
+                    <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-2">
+                        @if ($siteSettings->logo_url)
+                            <img src="{{ $siteSettings->logo_url }}" alt="" class="h-10 w-auto max-w-24 object-contain">
+                        @endif
+                        <span class="max-w-32 truncate text-2xl font-black tracking-tighter text-ink-900 sm:max-w-48">{{ $siteSettings->site_name }}</span>
                     </a>
                 </div>
 
                 <!-- Right Action Icons (Image 2: Search, Wishlist, Cart, Profile) -->
-                <div class="flex items-center gap-2 sm:gap-4">
+                <div class="store-actions flex items-center gap-2 sm:gap-4">
                     <!-- Search Button / Bar -->
                     <a href="{{ route('products.index') }}" class="ui-icon-btn" aria-label="{{ __('Search products') }}">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -90,51 +93,52 @@
             </div>
         </div>
 
-        <!-- Mobile Drawer Menu -->
-        <div x-show="mobileDrawer" @click="mobileDrawer = false; $nextTick(() => $refs.storeDrawerOpen.focus())" class="fixed inset-0 z-50 bg-ink-900/60 backdrop-blur-sm lg:hidden" x-cloak aria-hidden="true"></div>
-        <div id="storefront-navigation" x-ref="storeDrawer" x-show="mobileDrawer" role="dialog" aria-modal="true" aria-label="{{ __('Store navigation') }}" tabindex="-1" class="fixed inset-y-0 left-0 z-50 w-[min(20rem,88vw)] bg-white p-6 shadow-2xl lg:hidden flex flex-col justify-between" x-cloak>
-            <div>
-                <div class="flex items-center justify-between mb-8">
-                    <x-ui.brand compact />
-                    <button x-ref="storeDrawerClose" type="button" @click="mobileDrawer = false; $nextTick(() => $refs.storeDrawerOpen.focus())" class="ui-icon-btn" aria-label="{{ __('Close navigation') }}">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>
-                <div class="space-y-4 text-sm font-semibold text-slate-700">
-                    <a href="{{ url('/') }}" class="block py-2 hover:text-brand-500">{{ __('Home') }}</a>
-                    <a href="{{ route('products.index') }}" class="block py-2 hover:text-brand-500">{{ __('Catalog & Products') }}</a>
-                    <a href="{{ route('cart.index') }}" class="block py-2 hover:text-brand-500">{{ __('Cart') }}</a>
-                    <a href="{{ route('wishlist.index') }}" class="block py-2 hover:text-brand-500">{{ __('Wishlist') }}</a>
-                    @auth
-                        <a href="{{ route('customer.dashboard') }}" class="block py-2 hover:text-brand-500">{{ __('My Dashboard') }}</a>
-                        @if(auth()->user()->is_admin)
-                            <a href="{{ route('admin.dashboard') }}" class="block py-2 text-accent-600 font-bold">{{ __('Admin Panel') }}</a>
-                        @endif
-                    @endauth
-                </div>
+    </header>
+
+    <!-- Mobile Drawer Menu -->
+    <div x-show="mobileDrawer" @click="mobileDrawer = false; $nextTick(() => $refs.storeDrawerOpen.focus())" class="fixed inset-0 z-50 bg-ink-900/60 backdrop-blur-sm lg:hidden" x-cloak aria-hidden="true"></div>
+    <div id="storefront-navigation" x-ref="storeDrawer" x-show="mobileDrawer" role="dialog" aria-modal="true" aria-label="{{ __('Store navigation') }}" tabindex="-1" class="fixed inset-y-0 left-0 z-50 flex w-[min(20rem,88vw)] flex-col justify-between overflow-y-auto overscroll-contain bg-white px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl ui-scrollbar lg:hidden" x-cloak>
+        <div class="shrink-0">
+            <div class="flex items-center justify-between mb-8">
+                <x-ui.brand compact />
+                <button x-ref="storeDrawerClose" type="button" @click="mobileDrawer = false; $nextTick(() => $refs.storeDrawerOpen.focus())" class="ui-icon-btn" aria-label="{{ __('Close navigation') }}">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
-            <div class="pt-6 border-t border-slate-100">
+            <div class="space-y-4 text-sm font-semibold text-slate-700">
+                <a href="{{ url('/') }}" class="block py-2 hover:text-brand-500">{{ __('Home') }}</a>
+                <a href="{{ route('products.index') }}" class="block py-2 hover:text-brand-500">{{ __('Catalog & Products') }}</a>
+                <a href="{{ route('cart.index') }}" class="block py-2 hover:text-brand-500">{{ __('Cart') }}</a>
+                <a href="{{ route('wishlist.index') }}" class="block py-2 hover:text-brand-500">{{ __('Wishlist') }}</a>
                 @auth
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full text-center py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200">
-                            {{ __('Sign out') }}
-                        </button>
-                    </form>
-                @else
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="{{ route('login') }}" class="text-center py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold">{{ __('Sign in') }}</a>
-                        <a href="{{ route('register') }}" class="text-center py-2.5 rounded-xl bg-brand-500 text-white text-xs font-bold">{{ __('Create account') }}</a>
-                    </div>
+                    <a href="{{ route('customer.dashboard') }}" class="block py-2 hover:text-brand-500">{{ __('My Dashboard') }}</a>
+                    @if(auth()->user()->is_admin)
+                        <a href="{{ route('admin.dashboard') }}" class="block py-2 text-accent-600 font-bold">{{ __('Admin Panel') }}</a>
+                    @endif
                 @endauth
             </div>
         </div>
-    </header>
+        <div class="shrink-0 pt-6 border-t border-slate-100">
+            @auth
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full text-center py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200">
+                        {{ __('Sign out') }}
+                    </button>
+                </form>
+            @else
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="{{ route('login') }}" class="text-center py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold">{{ __('Sign in') }}</a>
+                    <a href="{{ route('register') }}" class="text-center py-2.5 rounded-xl bg-brand-500 text-white text-xs font-bold">{{ __('Create account') }}</a>
+                </div>
+            @endauth
+        </div>
+    </div>
 
     <!-- Main Content Area -->
     <main id="storefront-main" class="flex-1 pb-28 md:pb-16">
         @if (session('status') || session('error') || $errors->any())
-            <div class="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
+            <div class="ui-container pt-5">
                 @include('layouts.partials.flash')
             </div>
         @endif
@@ -142,7 +146,7 @@
     </main>
 
     <!-- Floating Mobile Bottom Navigation Bar (Image 4 Style) -->
-    <nav aria-label="{{ __('Mobile navigation') }}" class="md:hidden fixed bottom-4 inset-x-4 z-40 bg-white/95 backdrop-blur-lg border border-slate-200/80 rounded-full py-2 px-6 shadow-xl flex items-center justify-between">
+    <nav aria-label="{{ __('Mobile navigation') }}" class="mobile-store-nav md:hidden fixed bottom-4 inset-x-4 z-40 backdrop-blur-lg border rounded-full py-2 px-6 shadow-xl flex items-center justify-between">
         <a href="{{ url('/') }}" aria-label="{{ __('Home') }}" @if (request()->is('/')) aria-current="page" @endif class="flex flex-col items-center gap-0.5 {{ request()->is('/') ? 'text-brand-500' : 'text-slate-400' }}">
             <div class="w-10 h-10 rounded-full flex items-center justify-center {{ request()->is('/') ? 'bg-brand-500 text-white shadow-md shadow-brand-500/30' : '' }}">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,49 +181,64 @@
     </nav>
 
     <!-- Footer (Image 2 style Minimalist footer) -->
-    <footer class="bg-white border-t border-slate-100 pt-12 pb-8">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <footer class="site-footer pt-12 pb-8">
+        <div class="ui-container">
             <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-                <div class="col-span-2">
-                    <span class="text-2xl font-black tracking-tight text-ink-900">NEXT<span class="text-brand-500">ON</span></span>
-                    <p class="mt-3 text-xs text-slate-500 max-w-sm leading-relaxed">
-                        {{ __('The premium multivendor commerce platform in Bangladesh. Discover verified merchants, curated electronics, gadgets, and design essentials.') }}
-                    </p>
-                    <div class="flex items-center gap-3 mt-4 text-slate-400">
-                        <span class="text-xs font-semibold text-emerald-600 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span> {{ __('100% Authentic Products') }}
+                <div class="footer-brand col-span-2 min-w-0">
+                    <a href="{{ url('/') }}" class="inline-flex min-w-0 items-center gap-2">
+                        @if ($siteSettings->logo_url)
+                            <img src="{{ $siteSettings->logo_url }}" alt="" class="h-10 w-auto max-w-24 object-contain">
+                        @endif
+                        <span class="footer-brand break-words text-2xl font-black tracking-tight">{{ $siteSettings->site_name }}</span>
+                    </a>
+                    @if ($siteSettings->footer_description)
+                        <p class="mt-3 max-w-sm text-xs leading-relaxed footer-link">{{ $siteSettings->footer_description }}</p>
+                    @endif
+                    <div class="mt-4 flex flex-wrap items-center gap-3 text-slate-400">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500" aria-hidden="true"></span> {{ __('100% Authentic Products') }}
                         </span>
                     </div>
+                    @if ($siteSettings->contact_email || $siteSettings->contact_phone)
+                        <div class="mt-4 space-y-2 text-xs">
+                            @if ($siteSettings->contact_email)
+                                <a href="mailto:{{ $siteSettings->contact_email }}" class="footer-link block break-all">{{ $siteSettings->contact_email }}</a>
+                            @endif
+                            @if ($siteSettings->contact_phone)
+                                <a href="tel:{{ $siteSettings->contact_phone }}" class="footer-link block break-all">{{ $siteSettings->contact_phone }}</a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
-                <div>
-                    <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">{{ __('Shop') }}</h4>
-                    <ul class="space-y-2 text-xs text-slate-500 font-medium">
-                        <li><a href="{{ route('products.index') }}" class="hover:text-slate-900">{{ __('All Products') }}</a></li>
-                        <li><a href="{{ route('products.index') }}" class="hover:text-slate-900">{{ __('Electronics & Tech') }}</a></li>
-                        <li><a href="{{ route('products.index') }}" class="hover:text-slate-900">{{ __('Living & Gadgets') }}</a></li>
-                        <li><a href="{{ route('products.index') }}" class="hover:text-slate-900">{{ __('Special Deals') }}</a></li>
+                <div class="footer-column">
+                    <h4 class="footer-heading text-xs font-bold uppercase tracking-wider mb-3">{{ __('Shop') }}</h4>
+                    <ul class="footer-links space-y-2 text-xs font-medium">
+                        <li><a href="{{ route('products.index') }}" class="footer-link">{{ __('All Products') }}</a></li>
+                        <li><a href="{{ route('products.index') }}" class="footer-link">{{ __('Electronics & Tech') }}</a></li>
+                        <li><a href="{{ route('products.index') }}" class="footer-link">{{ __('Living & Gadgets') }}</a></li>
+                        <li><a href="{{ route('products.index') }}" class="footer-link">{{ __('Special Deals') }}</a></li>
                     </ul>
                 </div>
-                <div>
-                    <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">{{ __('Vendors') }}</h4>
-                    <ul class="space-y-2 text-xs text-slate-500 font-medium">
-                        <li><a href="{{ route('vendor.register.create') }}" class="hover:text-slate-900">{{ __('Become a Seller') }}</a></li>
-                        <li><a href="{{ route('vendor.dashboard') }}" class="hover:text-slate-900">{{ __('Vendor Portal') }}</a></li>
-                        <li><a href="{{ route('vendor.registration.status') }}" class="hover:text-slate-900">{{ __('Application Status') }}</a></li>
+                <div class="footer-column">
+                    <h4 class="footer-heading text-xs font-bold uppercase tracking-wider mb-3">{{ __('Vendors') }}</h4>
+                    <ul class="footer-links space-y-2 text-xs font-medium">
+                        <li><a href="{{ route('vendor.register.create') }}" class="footer-link">{{ __('Become a Seller') }}</a></li>
+                        <li><a href="{{ route('vendor.dashboard') }}" class="footer-link">{{ __('Vendor Portal') }}</a></li>
+                        <li><a href="{{ route('vendor.registration.status') }}" class="footer-link">{{ __('Application Status') }}</a></li>
                     </ul>
                 </div>
-                <div>
-                    <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">{{ __('Customer') }}</h4>
-                    <ul class="space-y-2 text-xs text-slate-500 font-medium">
-                        <li><a href="{{ route('customer.dashboard') }}" class="hover:text-slate-900">{{ __('My Account') }}</a></li>
-                        <li><a href="{{ route('orders.index') }}" class="hover:text-slate-900">{{ __('Order Tracking') }}</a></li>
-                        <li><a href="{{ route('cart.index') }}" class="hover:text-slate-900">{{ __('Shopping Cart') }}</a></li>
-                        <li><a href="{{ route('wishlist.index') }}" class="hover:text-slate-900">{{ __('Wishlist') }}</a></li>
+                <div class="footer-column">
+                    <h4 class="footer-heading text-xs font-bold uppercase tracking-wider mb-3">{{ __('Customer') }}</h4>
+                    <ul class="footer-links space-y-2 text-xs font-medium">
+                        <li><a href="{{ route('customer.dashboard') }}" class="footer-link">{{ __('My Account') }}</a></li>
+                        <li><a href="{{ route('orders.index') }}" class="footer-link">{{ __('Order Tracking') }}</a></li>
+                        <li><a href="{{ route('cart.index') }}" class="footer-link">{{ __('Shopping Cart') }}</a></li>
+                        <li><a href="{{ route('wishlist.index') }}" class="footer-link">{{ __('Wishlist') }}</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-                <div>&copy; {{ date('Y') }} Nexton BD Tech E-Commerce Ltd. All rights reserved.</div>
+            <div class="footer-divider pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                <div>&copy; {{ date('Y') }} {{ $siteSettings->copyright_text }}</div>
                 @php
                     $publishedPages = \App\Modules\Cms\Models\CmsPage::where('is_published', true)->orderBy('title')->get();
                 @endphp

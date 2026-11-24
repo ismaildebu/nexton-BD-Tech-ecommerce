@@ -3,11 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', __('Account')) · {{ config('app.name') }}</title>
+    <title>@yield('title', __('Account')) · {{ $siteSettings->site_name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @include('layouts.partials.theme')
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900">
     <a href="#account-main" class="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-semibold focus:not-sr-only focus:fixed focus:left-4 focus:top-4">{{ __('Skip to content') }}</a>
@@ -46,7 +44,7 @@
         </nav>
     </header>
 
-    <main id="account-main" class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 md:py-10 lg:px-8">
+    <main id="account-main" class="ui-page-narrow flex-1">
         @include('layouts.partials.flash')
         @yield('content')
     </main>

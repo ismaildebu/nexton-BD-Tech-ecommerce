@@ -3,11 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', __('Vendor portal')) · {{ config('app.name') }}</title>
+    <title>@yield('title', __('Vendor portal')) · {{ $siteSettings->site_name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @include('layouts.partials.theme')
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900" x-data="{ mobileOpen: false }" x-effect="document.body.style.overflow = mobileOpen ? 'hidden' : ''" @ui:dismiss.window="if ($event.target.id === 'vendor-navigation') { mobileOpen = false; $nextTick(() => $refs.vendorDrawerOpen?.focus()); }">
     <a href="#vendor-main" class="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-semibold text-slate-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">{{ __('Skip to content') }}</a>
@@ -96,7 +94,7 @@
                 </a>
             </header>
 
-            <main id="vendor-main" class="mx-auto w-full max-w-7xl flex-1 px-4 py-7 sm:px-6 md:py-9 lg:px-8">
+            <main id="vendor-main" class="ui-page flex-1">
                 @include('layouts.partials.flash')
                 @yield('content')
             </main>

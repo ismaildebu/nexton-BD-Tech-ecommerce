@@ -1,5 +1,5 @@
 @extends('layouts.frontend')
-@section('title', __(':product - :store', ['product' => $product->name, 'store' => config('app.name')]))
+@section('title', __(':product - :store', ['product' => $product->name, 'store' => $siteSettings->site_name]))
 
 @section('content')
 <div class="ui-page max-w-6xl" x-data="{ quantity: 1, maxQuantity: {{ max(1, min(999, $stock)) }}, copied: false, async copyLink() { try { await navigator.clipboard.writeText(window.location.href); this.copied = true; setTimeout(() => this.copied = false, 2000); } catch { this.copied = false; } } }">

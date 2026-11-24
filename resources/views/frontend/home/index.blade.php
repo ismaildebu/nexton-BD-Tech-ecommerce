@@ -1,5 +1,5 @@
 @extends('layouts.frontend')
-@section('title', __('NEXTON - Curated Tech & Lifestyle Marketplace'))
+@section('title', __(':store - Curated Tech & Lifestyle Marketplace', ['store' => $siteSettings->site_name]))
 
 @section('content')
 @php
@@ -82,7 +82,7 @@
                         </span>
                         <div>
                             <h2 class="text-sm font-bold">{{ __('Curated Living Space') }}</h2>
-                            <p class="mt-0.5 text-xs text-slate-300">{{ __('Nexton Design Studio') }}</p>
+                            <p class="mt-0.5 text-xs text-slate-300">{{ __(':store Design Studio', ['store' => $siteSettings->site_name]) }}</p>
                         </div>
                     </div>
                     <x-ui.button :href="route('products.index')" variant="dark" class="self-start bg-white text-ink-900 hover:bg-slate-100 sm:self-auto">{{ __('Explore collection') }}</x-ui.button>
@@ -170,7 +170,7 @@
                         <a href="{{ route('products.show', $product) }}" class="rounded-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20">
                             <h3 class="break-words text-sm font-bold leading-6 text-slate-800 transition group-hover:text-brand-700">{{ $product->name }}</h3>
                         </a>
-                        <p class="mt-1 text-xs text-slate-500">{{ $product->brand->name ?? ($product->category->name ?? __('Nexton Tech')) }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ $product->brand->name ?? ($product->category->name ?? __(':store Tech', ['store' => $siteSettings->site_name])) }}</p>
 
                         <div class="mt-auto flex flex-col gap-3 border-t border-slate-100 pt-4">
                             <x-ui.badge :tone="$available ? 'success' : 'danger'">{{ $available ? __('In stock') : __('Out of stock') }}</x-ui.badge>

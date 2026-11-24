@@ -1,5 +1,5 @@
 @extends('layouts.frontend')
-@section('title', __('Product Catalog - :store', ['store' => config('app.name')]))
+@section('title', __('Product Catalog - :store', ['store' => $siteSettings->site_name]))
 
 @section('content')
 @php
@@ -93,7 +93,7 @@
                         <a href="{{ route('products.show', $product) }}" class="rounded-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20">
                             <h2 class="break-words text-sm font-bold leading-6 text-slate-800 transition group-hover:text-brand-700">{{ $product->name }}</h2>
                         </a>
-                        <p class="mt-1 text-xs text-slate-500">{{ $product->category->name ?? __('Nexton Marketplace') }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ $product->category->name ?? __(':store Marketplace', ['store' => $siteSettings->site_name]) }}</p>
 
                         <div class="mt-auto flex flex-col gap-3 border-t border-slate-100 pt-4">
                             <x-ui.badge :tone="$available ? 'success' : 'danger'">{{ $available ? __('In stock') : __('Out of Stock') }}</x-ui.badge>

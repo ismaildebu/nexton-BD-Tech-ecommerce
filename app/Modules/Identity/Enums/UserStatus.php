@@ -9,15 +9,9 @@ enum UserStatus: string
     case Suspended = 'suspended';
     case PendingVerification = 'pending_verification';
 
-    /**
-     * Only active and pending-verification accounts may sign in.
-     */
     public function canAuthenticate(): bool
     {
-        return match ($this) {
-            self::Active, self::PendingVerification => true,
-            self::Inactive, self::Suspended => false,
-        };
+        return $this === self::Active;
     }
 
     public function label(): string

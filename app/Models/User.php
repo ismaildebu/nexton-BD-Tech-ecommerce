@@ -48,6 +48,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'status' => UserStatus::class,
+            'is_admin' => 'boolean',
             'is_protected' => 'boolean',
         ];
     }
@@ -62,13 +63,24 @@ class User extends Authenticatable
         return $this->hasMany(Address::class);
     }
 
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone !== null && $this->phone_verified_at !== null;
+    }
+
+    public function hasVerifiedContact(): bool
+    {
+        return ($this->email !== null && $this->hasVerifiedEmail())
+            || $this->hasVerifiedPhone();
+    }
+
     public function canAuthenticate(): bool
     {
         $status = $this->status instanceof UserStatus
             ? $this->status
             : UserStatus::tryFrom((string) $this->status);
 
-        return $status?->canAuthenticate() ?? false;
+        return ($status?->canAuthenticate() ?? false) && $this->hasVerifiedContact();
     }
 
     public function vendor(): \Illuminate\Database\Eloquent\Relations\HasOne

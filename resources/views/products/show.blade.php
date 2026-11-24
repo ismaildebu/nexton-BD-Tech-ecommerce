@@ -1,190 +1,156 @@
 @extends('layouts.frontend')
-@section('title', $product->name . ' - NEXTON')
+@section('title', __(':product - :store', ['product' => $product->name, 'store' => config('app.name')]))
 
 @section('content')
-<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-4 sm:py-8" 
-     x-data="{ 
-        quantity: 1, 
-        selectedColor: 'black', 
-        activeTab: 'desc', 
-        inWishlist: false,
-        copied: false 
-     }">
+<div class="ui-page max-w-6xl" x-data="{ quantity: 1, maxQuantity: {{ max(1, min(999, $stock)) }}, copied: false, async copyLink() { try { await navigator.clipboard.writeText(window.location.href); this.copied = true; setTimeout(() => this.copied = false, 2000); } catch { this.copied = false; } } }">
+    <div class="mb-6 flex items-center justify-between gap-3">
+        <x-ui.button :href="route('products.index')" variant="outline">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            {{ __('Back to products') }}
+        </x-ui.button>
 
-    <!-- Top Action Bar (Back, Title, Share, Wishlist) -->
-    <div class="flex items-center justify-between mb-6">
-        <a href="{{ route('products.index') }}" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:text-[#FF5B22] hover:border-[#FF5B22] shadow-xs transition" title="Back to Products">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-        </a>
-
-        <div class="flex items-center gap-2">
-            <!-- Share button -->
-            <button @click="navigator.clipboard.writeText(window.location.href); copied = true; setTimeout(() => copied = false, 2000)" 
-                    class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:text-[#FF5B22] shadow-xs transition" title="Share Product">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                </svg>
+        <div class="relative flex items-center gap-2">
+            <span x-show="copied" x-cloak role="status" aria-live="polite" class="absolute -top-10 right-0 whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">{{ __('Link copied') }}</span>
+            <button type="button" @click="copyLink" class="ui-icon-btn border border-slate-200 bg-white shadow-sm hover:border-brand-200 hover:text-brand-600" aria-label="{{ __('Share product') }}" title="{{ __('Share product') }}">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
             </button>
-            <span x-show="copied" class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full absolute -top-8 right-12" x-cloak>Link Copied!</span>
-
-            <!-- Wishlist Button -->
-            <button @click="inWishlist = !inWishlist" 
-                    class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:text-rose-500 shadow-xs transition" title="Save to Wishlist">
-                <svg class="w-5 h-5 transition" :class="inWishlist ? 'fill-rose-500 text-rose-500' : 'fill-none'" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
-            </button>
+            <form method="POST" action="{{ route('wishlist.store') }}">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <button type="submit" class="ui-icon-btn border border-slate-200 bg-white shadow-sm hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500" aria-label="{{ __('Save to wishlist') }}" title="{{ __('Save to wishlist') }}">
+                    <svg class="h-5 w-5 transition {{ $isWishlisted ? 'fill-rose-500 text-rose-500' : 'fill-none' }}" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                </button>
+            </form>
         </div>
     </div>
 
-    <!-- Product Showcase Gallery (Image 4 Style) -->
-    <div class="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-sm mb-6">
-        <div class="relative flex items-center justify-center h-64 sm:h-80 bg-[#F4F5F7] rounded-2xl overflow-hidden mb-4">
-            <div class="text-8xl sm:text-9xl transform hover:scale-110 transition duration-300 select-none">
-                🎧
-            </div>
-        </div>
-
-        <!-- Dot Carousel Indicators -->
-        <div class="flex items-center justify-center gap-2">
-            <span class="w-6 h-2 rounded-full bg-[#181F2C]"></span>
-            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-        </div>
-    </div>
-
-    <!-- Product Info Card (Image 4 Style) -->
-    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm mb-8">
-        <!-- Title & Price -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+    <x-ui.card :padding="false" class="mb-6 overflow-hidden">
+        <div class="flex h-64 items-center justify-center bg-gradient-to-br from-slate-50 via-white to-accent-50/70 text-center text-slate-400 sm:h-80">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ $product->name }}</h1>
-                <div class="flex items-center gap-3 mt-2 text-xs">
-                    <span class="inline-flex items-center gap-1 font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md">
-                        ★ 4.8
-                    </span>
-                    <span class="text-slate-400 font-medium">(320 Reviews)</span>
-                    <span class="text-slate-300">&bull;</span>
-                    <span class="text-slate-600 font-semibold">
-                        Seller: <span class="text-[#FF5B22] font-bold">{{ $product->vendor->business_name ?? 'Nexton Official' }}</span>
-                    </span>
+                <svg class="mx-auto h-24 w-24 text-accent-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                <p class="mt-3 text-xs font-semibold">{{ __('Product image not available') }}</p>
+            </div>
+        </div>
+    </x-ui.card>
+
+    <x-ui.card class="mb-8">
+        <div class="flex flex-col gap-5 border-b border-slate-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+                <h1 class="break-words text-2xl font-extrabold text-slate-900 sm:text-3xl">{{ $product->name }}</h1>
+                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
+                    @if ($ratingSummary->review_count > 0)
+                        <a href="#reviews" class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 font-bold text-amber-700 ring-1 ring-inset ring-amber-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20">
+                            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.951.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.448a1 1 0 00-.364 1.118l1.285 3.957a1 1 0 01-1.536 1.28L10.69 15.73a1 1 0 00-1.175 0l-3.366 2.457a1 1 0 01-1.537-1.28l1.286-3.957a1 1 0 00-.364-1.118L2.367 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.286-3.957z"/></svg>
+                            {{ number_format((float) $ratingSummary->average_rating, 1) }}
+                        </a>
+                        <span class="font-medium text-slate-500">{{ $ratingSummary->review_count }} {{ __('reviews') }}</span>
+                    @else
+                        <span class="font-medium text-slate-500">{{ __('No reviews yet') }}</span>
+                    @endif
+                    <span class="text-slate-300" aria-hidden="true">&bull;</span>
+                    <span class="font-semibold text-slate-600">{{ __('Seller') }}: <span class="font-bold text-brand-700">{{ $product->vendor->business_name }}</span></span>
                 </div>
             </div>
-            <div class="sm:text-right">
-                <div class="text-3xl font-black text-slate-900">৳ {{ number_format($product->price, 2) }}</div>
-                <div class="text-xs font-semibold text-emerald-600 mt-0.5">In Stock &bull; Ready to ship</div>
+            <div class="shrink-0 sm:text-right">
+                <p class="text-3xl font-black text-slate-900">৳ {{ number_format($product->price, 2) }}</p>
+                <x-ui.badge :tone="$stock > 0 ? 'success' : 'danger'" class="mt-2">{{ $stock > 0 ? $stock.' '.__('in stock') : __('Out of stock') }}</x-ui.badge>
             </div>
         </div>
 
-        <!-- Color Selector (Image 4 Style) -->
-        <div class="py-6 border-b border-slate-100">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Color Option</h3>
-            <div class="flex items-center gap-3">
-                <!-- Red -->
-                <button @click="selectedColor = 'red'" 
-                        :class="selectedColor === 'red' ? 'ring-2 ring-offset-2 ring-[#FF5B22] scale-110' : 'opacity-80 hover:opacity-100'"
-                        class="w-7 h-7 rounded-full bg-[#8B0000] transition transform"></button>
-                <!-- Black -->
-                <button @click="selectedColor = 'black'" 
-                        :class="selectedColor === 'black' ? 'ring-2 ring-offset-2 ring-[#FF5B22] scale-110' : 'opacity-80 hover:opacity-100'"
-                        class="w-7 h-7 rounded-full bg-[#181F2C] transition transform"></button>
-                <!-- Blue -->
-                <button @click="selectedColor = 'blue'" 
-                        :class="selectedColor === 'blue' ? 'ring-2 ring-offset-2 ring-[#FF5B22] scale-110' : 'opacity-80 hover:opacity-100'"
-                        class="w-7 h-7 rounded-full bg-[#1E3A8A] transition transform"></button>
-                <!-- Brown -->
-                <button @click="selectedColor = 'brown'" 
-                        :class="selectedColor === 'brown' ? 'ring-2 ring-offset-2 ring-[#FF5B22] scale-110' : 'opacity-80 hover:opacity-100'"
-                        class="w-7 h-7 rounded-full bg-[#78350F] transition transform"></button>
-                <!-- Grey -->
-                <button @click="selectedColor = 'grey'" 
-                        :class="selectedColor === 'grey' ? 'ring-2 ring-offset-2 ring-[#FF5B22] scale-110' : 'opacity-80 hover:opacity-100'"
-                        class="w-7 h-7 rounded-full bg-[#D1D5DB] transition transform"></button>
-            </div>
+        <div class="grid gap-8 py-7 lg:grid-cols-2">
+            <section aria-labelledby="description-title">
+                <h2 id="description-title" class="ui-section-title mb-3">{{ __('Description') }}</h2>
+                <p class="whitespace-pre-line break-words text-sm leading-7 text-slate-600">{{ $product->description ?: __('No description has been provided for this product.') }}</p>
+            </section>
+            <section aria-labelledby="details-title">
+                <h2 id="details-title" class="ui-section-title mb-3">{{ __('Product details') }}</h2>
+                <dl class="grid grid-cols-1 gap-3 text-sm min-[420px]:grid-cols-2">
+                    <div class="rounded-xl bg-slate-50 p-4"><dt class="font-bold text-slate-800">{{ __('Brand') }}</dt><dd class="mt-1 text-slate-500">{{ $product->brand?->name ?? '—' }}</dd></div>
+                    <div class="rounded-xl bg-slate-50 p-4"><dt class="font-bold text-slate-800">{{ __('Category') }}</dt><dd class="mt-1 text-slate-500">{{ $product->category?->name ?? '—' }}</dd></div>
+                    <div class="rounded-xl bg-slate-50 p-4"><dt class="font-bold text-slate-800">{{ __('Seller') }}</dt><dd class="mt-1 break-words text-slate-500">{{ $product->vendor->business_name }}</dd></div>
+                    <div class="rounded-xl bg-slate-50 p-4"><dt class="font-bold text-slate-800">{{ __('Availability') }}</dt><dd class="mt-1 text-slate-500">{{ $stock > 0 ? __('In stock') : __('Out of stock') }}</dd></div>
+                </dl>
+            </section>
         </div>
 
-        <!-- Tabbed Details (Description, Specifications, Reviews - Image 4 Style) -->
-        <div class="pt-6">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
-                <button @click="activeTab = 'desc'" 
-                        :class="activeTab === 'desc' ? 'bg-[#FF5B22] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                        class="px-4 py-1.5 rounded-full text-xs font-bold transition">
-                    Description
-                </button>
-                <button @click="activeTab = 'specs'" 
-                        :class="activeTab === 'specs' ? 'bg-[#FF5B22] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                        class="px-4 py-1.5 rounded-full text-xs font-bold transition">
-                    Specifications
-                </button>
-                <button @click="activeTab = 'reviews'" 
-                        :class="activeTab === 'reviews' ? 'bg-[#FF5B22] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                        class="px-4 py-1.5 rounded-full text-xs font-bold transition">
-                    Reviews (320)
-                </button>
+        <section id="reviews" class="scroll-mt-28 border-t border-slate-100 pt-7" aria-labelledby="reviews-title">
+            <div class="mb-5">
+                <h2 id="reviews-title" class="text-xl font-extrabold text-slate-900">{{ __('Customer reviews') }}</h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    @if ($ratingSummary->review_count > 0)
+                        {{ number_format((float) $ratingSummary->average_rating, 1) }}/5 {{ __('from') }} {{ $ratingSummary->review_count }} {{ __('reviews') }}
+                    @else
+                        {{ __('Be the first to review this product.') }}
+                    @endif
+                </p>
             </div>
 
-            <!-- Description Tab -->
-            <div x-show="activeTab === 'desc'" class="text-xs text-slate-600 leading-relaxed space-y-3">
-                <p>{{ $product->description ?: 'Designed with precision engineering, premium materials, and cutting-edge audio acoustic drivers. Delivers crisp trebles, balanced midtones, and punchy deep bass. Equipped with active noise cancellation and ergonomic ear-tips for all-day comfort.' }}</p>
-                <ul class="list-disc pl-5 space-y-1 font-medium text-slate-700">
-                    <li>Bluetooth 5.3 ultra-low latency connection</li>
-                    <li>Up to 32 hours playback with fast wireless charging case</li>
-                    <li>IPX5 sweat and splash resistance for sports & workouts</li>
-                </ul>
-            </div>
-
-            <!-- Specifications Tab -->
-            <div x-show="activeTab === 'specs'" class="text-xs text-slate-600" x-cloak>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="p-3 bg-slate-50 rounded-xl"><span class="font-bold text-slate-800">Brand:</span> {{ $product->brand->name ?? 'Nexton Tech' }}</div>
-                    <div class="p-3 bg-slate-50 rounded-xl"><span class="font-bold text-slate-800">Category:</span> {{ $product->category->name ?? 'Electronics' }}</div>
-                    <div class="p-3 bg-slate-50 rounded-xl"><span class="font-bold text-slate-800">Warranty:</span> 1 Year Official Replacement</div>
-                    <div class="p-3 bg-slate-50 rounded-xl"><span class="font-bold text-slate-800">Origin:</span> Authorized Import</div>
-                </div>
-            </div>
-
-            <!-- Reviews Tab -->
-            <div x-show="activeTab === 'reviews'" class="text-xs text-slate-600 space-y-3" x-cloak>
-                <div class="p-3 bg-slate-50 rounded-xl">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="font-bold text-slate-800">Sabbir Ahmed</span>
-                        <span class="text-amber-500 font-bold">★★★★★</span>
+            @auth
+                <form method="POST" action="{{ route('reviews.store') }}" class="mb-6 rounded-2xl bg-slate-50 p-4 sm:p-6">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <h3 class="mb-4 text-base font-bold text-slate-800">{{ __('Write a review') }}</h3>
+                    <div class="grid gap-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
+                        <x-form.select name="rating" :label="__('Rating')" required>
+                            @for ($rating = 5; $rating >= 1; $rating--)
+                                <option value="{{ $rating }}" @selected((int) old('rating', 5) === $rating)>{{ $rating }}/5</option>
+                            @endfor
+                        </x-form.select>
+                        <x-form.textarea name="comment" :label="__('Comment')" rows="4" maxlength="2000">{{ old('comment') }}</x-form.textarea>
                     </div>
-                    <p class="text-slate-500">Amazing sound quality and battery life. Delivered within 24 hours in Dhaka!</p>
+                    <x-ui.button type="submit" class="mt-5">{{ __('Submit review') }}</x-ui.button>
+                </form>
+            @else
+                <div class="mb-6 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                    <a href="{{ route('login') }}" class="ui-link">{{ __('Sign in') }}</a> {{ __('to write a review.') }}
                 </div>
+            @endauth
+
+            <div class="space-y-3">
+                @forelse ($reviews as $review)
+                    <article class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                        <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                            <h3 class="text-sm font-bold text-slate-800">{{ $review->user?->name ?? __('Customer') }}</h3>
+                            <span class="inline-flex items-center gap-0.5" role="img" aria-label="{{ __(':rating out of 5 stars', ['rating' => $review->rating]) }}">
+                                @for ($star = 1; $star <= 5; $star++)
+                                    <svg class="h-4 w-4 {{ $star <= $review->rating ? 'text-amber-400' : 'text-slate-300' }}" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.951.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.448a1 1 0 00-.364 1.118l1.285 3.957a1 1 0 01-1.536 1.28L10.69 15.73a1 1 0 00-1.175 0l-3.366 2.457a1 1 0 01-1.537-1.28l1.286-3.957a1 1 0 00-.364-1.118L2.367 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.286-3.957z"/></svg>
+                                @endfor
+                            </span>
+                        </div>
+                        <p class="whitespace-pre-line break-words text-sm leading-6 text-slate-600">{{ $review->comment ?: __('No comment provided.') }}</p>
+                        <p class="mt-2 text-[11px] text-slate-400"><time datetime="{{ $review->created_at?->toIso8601String() }}">{{ $review->created_at?->format('d M Y') }}</time></p>
+                    </article>
+                @empty
+                    <x-ui.card :padding="false">
+                        <x-ui.empty-state :title="__('No reviews have been submitted yet')" :description="__('Share your experience with this product.')" />
+                    </x-ui.card>
+                @endforelse
             </div>
-        </div>
-    </div>
+            <div class="ui-pagination mt-5">{{ $reviews->links() }}</div>
+        </section>
+    </x-ui.card>
 
-    <!-- Sticky Bottom Bar: Quantity Selector & Add to Cart (Image 4 Style) -->
-    <div class="sticky bottom-4 z-30 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-3 sm:p-4 shadow-xl flex items-center justify-between gap-4">
-        <!-- Quantity Selector (- 1 +) -->
-        <div class="flex items-center bg-slate-100 rounded-full px-3 py-1.5 gap-4">
-            <button type="button" @click="if (quantity > 1) quantity--" class="w-7 h-7 rounded-full bg-white text-slate-700 font-extrabold flex items-center justify-center hover:bg-slate-200 transition text-sm">
-                -
+    <div class="sticky bottom-24 z-30 flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-xl backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:p-4 md:bottom-4">
+        <div class="flex items-center self-start rounded-full bg-slate-100 p-1 sm:self-auto" role="group" aria-label="{{ __('Quantity') }}">
+            <button type="button" @click="if (quantity > 1) quantity--" class="ui-icon-btn h-11 w-11 bg-white shadow-sm" aria-label="{{ __('Decrease quantity') }}">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg>
             </button>
-            <span class="font-extrabold text-sm text-slate-800 w-4 text-center" x-text="quantity"></span>
-            <button type="button" @click="quantity++" class="w-7 h-7 rounded-full bg-white text-slate-700 font-extrabold flex items-center justify-center hover:bg-slate-200 transition text-sm">
-                +
+            <span class="w-10 text-center text-sm font-extrabold text-slate-800" x-text="quantity" aria-live="polite"></span>
+            <button type="button" @click="if (quantity < maxQuantity) quantity++" class="ui-icon-btn h-11 w-11 bg-white shadow-sm" aria-label="{{ __('Increase quantity') }}">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
             </button>
         </div>
 
-        <!-- Add to Cart Form -->
-        <form method="POST" action="{{ route('cart.store') }}" class="flex-1 max-w-md">
+        <form method="POST" action="{{ route('cart.store') }}" class="w-full sm:max-w-md">
             @csrf
             <input type="hidden" name="product_id" value="{{ $product->id }}">
             <input type="hidden" name="quantity" :value="quantity">
-            <button type="submit" class="w-full py-3.5 px-6 rounded-full bg-[#FF5B22] hover:bg-[#e04e1b] text-white text-sm font-extrabold shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                </svg>
-                <span>Add to Cart</span>
-                <span class="opacity-90">&bull;</span>
+            <x-ui.button type="submit" :disabled="$stock < 1" class="w-full">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l2.4 11.6a2 2 0 002 1.6h7.7a2 2 0 002-1.6L21 7H6M9 20a1 1 0 11-2 0 1 1 0 012 0zm10 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+                <span>{{ $stock > 0 ? __('Add to cart') : __('Out of stock') }}</span>
+                <span class="opacity-80" aria-hidden="true">&bull;</span>
                 <span x-text="'৳ ' + ({{ $product->price }} * quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
-            </button>
+            </x-ui.button>
         </form>
     </div>
 </div>

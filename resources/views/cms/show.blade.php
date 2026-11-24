@@ -1,5 +1,14 @@
 @extends('layouts.frontend')
+@section('title', __(':page - :store', ['page' => $page->title, 'store' => config('app.name')]))
+
 @section('content')
-    <h1 class="text-2xl font-bold mb-4">{{ $page->title }}</h1>
-    <div class="prose max-w-none">{!! $page->content !!}</div>
+<div class="ui-page-narrow">
+    <x-ui.page-header :title="$page->title" />
+
+    <x-ui.card :padding="false">
+        <article class="ui-prose min-w-0 overflow-x-auto break-words p-5 sm:p-8 lg:p-10">
+            {!! $page->content !!}
+        </article>
+    </x-ui.card>
+</div>
 @endsection

@@ -4,9 +4,11 @@
 @section('heading', __('Choose a new password'))
 
 @section('content')
-    <form method="POST" action="{{ route('password.update') }}" class="space-y-4" novalidate>
-        @csrf
+    <p class="mb-6 text-sm leading-6 text-slate-500">{{ __('Choose a strong password that you have not used before.') }}</p>
 
+    <form method="POST" action="{{ route('password.update') }}" class="space-y-5" novalidate
+        x-data="{ pending: false }" @submit="pending = true">
+        @csrf
         <input type="hidden" name="token" value="{{ $token }}">
 
         <x-form.input name="email" type="email" :label="__('Email')" :value="$email" autocomplete="email" required />
@@ -14,8 +16,14 @@
             :hint="__('At least 8 characters with upper case, lower case and a number.')" />
         <x-form.input name="password_confirmation" type="password" :label="__('Confirm new password')" autocomplete="new-password" required />
 
-        <button type="submit" class="w-full rounded-md bg-teal-700 px-4 py-2 font-medium text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-700/40">
-            {{ __('Reset password') }}
-        </button>
+        <x-ui.button type="submit" class="w-full" :disabled="false" x-bind:disabled="pending" :aria-busy="false"
+            x-bind:aria-busy="pending ? 'true' : 'false'">
+            <span x-show="pending" x-cloak class="ui-spinner" aria-hidden="true"></span>
+            <span x-text="pending ? @js(__('Resetting...')) : @js(__('Reset password'))">{{ __('Reset password') }}</span>
+        </x-ui.button>
     </form>
+
+    <p class="mt-6 border-t border-slate-100 pt-5 text-center text-sm">
+        <a href="{{ route('login') }}" class="ui-link">{{ __('Back to sign in') }}</a>
+    </p>
 @endsection

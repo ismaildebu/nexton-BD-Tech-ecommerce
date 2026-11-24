@@ -1,0 +1,21 @@
+@props(['name', 'label' => null, 'hint' => null, 'required' => false])
+
+@php
+    $id = $attributes->get('id', $name);
+    $describedBy = trim(($hint ? "$id-help" : '').' '.($errors->has($name) ? "$id-error" : ''));
+@endphp
+
+<div>
+    @if ($label)
+        <label for="{{ $id }}" class="ui-label">{{ $label }} @if ($required)<span class="text-brand-600" aria-hidden="true">*</span>@endif</label>
+    @endif
+    <select id="{{ $id }}" name="{{ $name }}" @required($required) @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif @error($name) aria-invalid="true" @enderror {{ $attributes->except('id')->merge(['class' => 'ui-input']) }}>
+        {{ $slot }}
+    </select>
+    @if ($hint)
+        <p id="{{ $id }}-help" class="ui-help">{{ $hint }}</p>
+    @endif
+    @error($name)
+        <p id="{{ $id }}-error" class="ui-error">{{ $message }}</p>
+    @enderror
+</div>

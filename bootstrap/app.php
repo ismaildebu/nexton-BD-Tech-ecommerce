@@ -53,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('profile.edit'));
+        $middleware->appendToGroup('web', \App\Modules\Identity\Http\Middleware\EnsureAccountIsActive::class);
         $middleware->alias(['admin' => \App\Modules\Vendor\Http\Middleware\EnsureAdmin::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

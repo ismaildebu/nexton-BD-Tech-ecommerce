@@ -5,8 +5,10 @@ namespace App\Modules\Identity\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Identity\Http\Requests\RegisterUserRequest;
 use App\Modules\Identity\Services\AuthenticationService;
-use Illuminate\Http\RedirectResponse;
+use App\Modules\Identity\Services\VerificationService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use LogicException;
 
 class RegisteredUserController extends Controller
 {
@@ -15,12 +17,28 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function store(RegisterUserRequest $request, AuthenticationService $auth): RedirectResponse
+    public function store(RegisterUserRequest $request, AuthenticationService $auth, VerificationService $verification): RedirectResponse
     {
         $user = $auth->register($request->validated());
+        $sendFailed = false;
 
-        $auth->login($request, $user);
+        try {
+            $verification->sendInitialChallenges($user);
+        } catch (LogicException $exception) {
+            report($exception);
+            $sendFailed = true;
+        }
 
-        return redirect()->route('profile.edit');
+        $request->session()->regenerate();
+        $request->session()->put('verification_user_id', $user->getKey());
+
+        $redirect = redirect()->route('verification.notice')
+            ->with('status', __('Complete email or mobile verification to sign in.'));
+
+        if ($sendFailed) {
+            $redirect->with('error', __('Your account was created, but a verification message could not be sent. Please try resending it.'));
+        }
+
+        return $redirect;
     }
 }

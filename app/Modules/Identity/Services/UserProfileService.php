@@ -3,6 +3,7 @@
 namespace App\Modules\Identity\Services;
 
 use App\Models\User;
+use App\Modules\Identity\Services\VerificationService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -11,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 
 class UserProfileService
 {
+    public function __construct(private readonly VerificationService $verification) {}
+
     /**
      * Update the signed-in user's own profile.
      *
@@ -20,29 +23,47 @@ class UserProfileService
      */
     public function updateProfile(User $user, array $data): User
     {
-        return DB::transaction(function () use ($user, $data): User {
-            $user->fill(Arr::only($data, ['name', 'email', 'phone']));
+        $emailChanged = false;
+        $phoneChanged = false;
 
-            if ($user->isDirty('email')) {
-                $user->forceFill(['email_verified_at' => null]);
+        $updated = DB::transaction(function () use ($user, $data, &$emailChanged, &$phoneChanged): User {
+            $locked = User::whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+            $locked->fill(Arr::only($data, ['name', 'email', 'phone']));
+
+            $emailChanged = $locked->isDirty('email');
+            $phoneChanged = $locked->isDirty('phone');
+
+            if ($emailChanged) {
+                $locked->forceFill(['email_verified_at' => null]);
             }
 
-            if ($user->isDirty('phone')) {
-                $user->forceFill(['phone_verified_at' => null]);
+            if ($phoneChanged) {
+                $locked->forceFill(['phone_verified_at' => null]);
             }
 
-            $user->save();
+            $this->verification->syncStatus($locked);
+            $locked->save();
 
             $profileData = Arr::only($data, ['preferred_language', 'date_of_birth']);
 
             if ($profileData !== []) {
-                $profile = $user->customerProfile()->firstOrNew();
+                $profile = $locked->customerProfile()->firstOrNew();
                 $profile->fill($profileData);
-                $user->customerProfile()->save($profile);
+                $locked->customerProfile()->save($profile);
             }
 
-            return $user->refresh();
+            return $locked->refresh();
         });
+
+        if ($emailChanged) {
+            $this->verification->sendEmail($updated);
+        }
+
+        if ($phoneChanged) {
+            $this->verification->sendPhone($updated);
+        }
+
+        return $updated;
     }
 
     /**

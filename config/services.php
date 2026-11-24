@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'phone_verification' => [
+        'driver' => env('PHONE_VERIFICATION_DRIVER', 'log'),
+        'ttl' => (int) env('PHONE_VERIFICATION_TTL', 600),
+        'cooldown' => (int) env('PHONE_VERIFICATION_COOLDOWN', 60),
+        'max_attempts' => (int) env('PHONE_VERIFICATION_MAX_ATTEMPTS', 5),
+    ],
+
 ];

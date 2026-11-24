@@ -8,21 +8,28 @@
     'hint' => null,
 ])
 
+@php
+    $id = $attributes->get('id', $name);
+    $describedBy = trim(($hint ? "$id-help" : '').' '.($errors->has($name) ? "$id-error" : ''));
+@endphp
+
 <div>
-    <label for="{{ $name }}" class="block text-sm font-medium text-gray-800">{{ $label }}</label>
+    <label for="{{ $id }}" class="ui-label">{{ $label }} @if ($required)<span class="text-brand-600" aria-hidden="true">*</span>@endif</label>
     <input
-        id="{{ $name }}"
+        id="{{ $id }}"
         name="{{ $name }}"
         type="{{ $type }}"
         @if ($type !== 'password') value="{{ old($name, $value) }}" @endif
         @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
         @required($required)
-        {{ $attributes->merge(['class' => 'mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700/30']) }}
+        @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
+        @error($name) aria-invalid="true" @enderror
+        {{ $attributes->except('id')->merge(['class' => 'ui-input']) }}
     >
     @if ($hint)
-        <p class="mt-1 text-xs text-gray-500">{{ $hint }}</p>
+        <p id="{{ $id }}-help" class="ui-help">{{ $hint }}</p>
     @endif
     @error($name)
-        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        <p id="{{ $id }}-error" class="ui-error">{{ $message }}</p>
     @enderror
 </div>

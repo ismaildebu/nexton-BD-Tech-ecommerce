@@ -1,13 +1,41 @@
 @extends('layouts.admin')
+@section('title', __('Inventory'))
+
 @section('content')
-    <h1 class="text-2xl font-bold mb-4">{{ __('Inventory') }}</h1>
-    <table class="w-full text-sm bg-white rounded shadow">
-        <thead><tr><th class="p-2 text-left">{{ __('Product') }}</th><th class="p-2">{{ __('Qty') }}</th></tr></thead>
-        <tbody>
-            @foreach ($items as $item)
-                <tr class="border-t"><td class="p-2">{{ $item->product->name ?? '-' }}</td><td class="p-2 text-center">{{ $item->quantity }}</td></tr>
-            @endforeach
-        </tbody>
-    </table>
-    <div class="mt-4">{{ $items->links() }}</div>
+    <div class="ui-page">
+        <x-ui.page-header
+            :title="__('Inventory')"
+            :description="__('Monitor stock quantities across your product catalog.')"
+            :eyebrow="__('Catalog operations')"
+        />
+
+        <x-ui.card>
+            @if ($items->isEmpty())
+                <x-ui.empty-state
+                    :title="__('No inventory records yet')"
+                    :description="__('Stock records will appear here once products are added to the catalog.')"
+                />
+            @else
+                <x-ui.table :caption="__('Product inventory quantities')">
+                    <x-slot:head>
+                        <tr>
+                            <th scope="col">{{ __('Product') }}</th>
+                            <th scope="col" class="text-right">{{ __('Quantity') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($items as $item)
+                        <tr>
+                            <td class="font-medium text-slate-900">{{ $item->product->name ?? __('Unavailable product') }}</td>
+                            <td class="text-right">
+                                <x-ui.badge :tone="$item->quantity > 0 ? 'success' : 'danger'">
+                                    {{ $item->quantity }}
+                                </x-ui.badge>
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-ui.table>
+                <div class="ui-pagination">{{ $items->links() }}</div>
+            @endif
+        </x-ui.card>
+    </div>
 @endsection

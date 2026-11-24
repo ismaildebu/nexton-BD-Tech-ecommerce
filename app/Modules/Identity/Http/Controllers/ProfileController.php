@@ -10,6 +10,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+use LogicException;
 
 class ProfileController extends Controller
 {
@@ -31,7 +33,17 @@ class ProfileController extends Controller
 
         Gate::authorize('update', $user);
 
-        $profiles->updateProfile($user, $request->validated());
+        try {
+            $profiles->updateProfile($user, $request->validated());
+        } catch (LogicException|ValidationException $exception) {
+            if ($exception instanceof LogicException) {
+                report($exception);
+            }
+
+            return redirect()->route('profile.edit')
+                ->with('status', __('Profile saved.'))
+                ->with('error', __('The verification message could not be sent. Please try again from the verification page.'));
+        }
 
         return redirect()->route('profile.edit')->with('status', __('Profile saved.'));
     }

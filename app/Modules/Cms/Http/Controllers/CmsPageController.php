@@ -24,6 +24,6 @@ class CmsPageController extends Controller
     {
         $this->cms->create($request->validated());
 
-        return redirect()->route('home')->with('status', __('Page created.'));
+        return redirect()->route('admin.cms.index')->with('status', __('Page created.'));
     }
 }

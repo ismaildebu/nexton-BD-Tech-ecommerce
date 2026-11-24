@@ -2,11 +2,365 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
-@source "../**/*.blade.php";
-@source "../**/*.js";
-@source "../**/*.vue";
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.vue';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', 'Noto Sans Bengali', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand-50: #fff3ed;
+    --color-brand-100: #ffe4d6;
+    --color-brand-200: #ffc7ad;
+    --color-brand-300: #ffa37a;
+    --color-brand-400: #ff7a47;
+    --color-brand-500: #ff5b22;
+    --color-brand-600: #ed4210;
+    --color-brand-700: #c4310b;
+    --color-brand-800: #9b2b10;
+    --color-brand-900: #7d2711;
+    --color-ink-50: #f6f7f9;
+    --color-ink-100: #eceef2;
+    --color-ink-200: #d9dde5;
+    --color-ink-300: #b5bdcb;
+    --color-ink-400: #8590a3;
+    --color-ink-500: #657187;
+    --color-ink-600: #505b70;
+    --color-ink-700: #3d475b;
+    --color-ink-800: #293246;
+    --color-ink-900: #181f2c;
+    --color-accent-50: #f3f0ff;
+    --color-accent-100: #e9e3ff;
+    --color-accent-200: #d6cbff;
+    --color-accent-300: #b8a7fb;
+    --color-accent-400: #957ef2;
+    --color-accent-500: #7558e8;
+    --color-accent-600: #6852d9;
+    --color-accent-700: #573fc1;
+    --color-accent-800: #48359d;
+    --color-accent-900: #3b2d7d;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 6rem;
+    }
+
+    body {
+        @apply bg-slate-50 text-slate-900 antialiased;
+        font-family: var(--font-sans);
+        text-rendering: optimizeLegibility;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        @apply tracking-tight;
+        text-wrap: balance;
+    }
+
+    p {
+        text-wrap: pretty;
+    }
+
+    ::selection {
+        @apply bg-brand-100 text-brand-900;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='submit']):not([type='button']),
+    select,
+    textarea {
+        @apply block min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition duration-150 placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500;
+    }
+
+    input[type='checkbox'],
+    input[type='radio'] {
+        @apply h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+@layer components {
+    .ui-page {
+        @apply mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 md:py-10 lg:px-8;
+    }
+
+    .ui-page-narrow {
+        @apply mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 md:py-10 lg:px-8;
+    }
+
+    .ui-page-wide {
+        @apply mx-auto w-full max-w-[90rem] px-3 py-6 sm:px-5 md:py-8 xl:px-8;
+    }
+
+    .ui-card {
+        @apply rounded-2xl border border-slate-200/80 bg-white shadow-sm;
+    }
+
+    .ui-card-muted {
+        @apply rounded-2xl border border-slate-200/70 bg-slate-50/80;
+    }
+
+    .ui-section-title {
+        @apply text-base font-bold text-slate-900 sm:text-lg;
+    }
+
+    .ui-page-header {
+        @apply mb-7 flex flex-col gap-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between;
+    }
+
+    .ui-page-title {
+        @apply text-2xl font-extrabold text-slate-950 sm:text-3xl;
+    }
+
+    .ui-page-description {
+        @apply mt-2 max-w-2xl text-sm leading-6 text-slate-500;
+    }
+
+    .ui-eyebrow {
+        @apply mb-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-600;
+    }
+
+    .ui-btn {
+        @apply inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .ui-btn-primary {
+        @apply bg-brand-500 text-white shadow-sm shadow-brand-500/20 hover:bg-brand-600 active:translate-y-px;
+    }
+
+    .ui-btn-secondary {
+        @apply bg-accent-600 text-white shadow-sm shadow-accent-600/20 hover:bg-accent-700 active:translate-y-px;
+    }
+
+    .ui-btn-dark {
+        @apply bg-ink-900 text-white shadow-sm hover:bg-ink-800 active:translate-y-px;
+    }
+
+    .ui-btn-outline {
+        @apply border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50;
+    }
+
+    .ui-btn-ghost {
+        @apply text-slate-600 hover:bg-slate-100 hover:text-slate-950;
+    }
+
+    .ui-btn-danger {
+        @apply bg-rose-600 text-white shadow-sm hover:bg-rose-700;
+    }
+
+    .ui-btn-success {
+        @apply bg-emerald-600 text-white shadow-sm hover:bg-emerald-700;
+    }
+
+    .ui-btn-sm {
+        @apply min-h-9 rounded-lg px-3 py-2 text-xs;
+    }
+
+    .ui-icon-btn {
+        @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20;
+    }
+
+    .ui-label {
+        @apply mb-1.5 block text-sm font-semibold text-slate-700;
+    }
+
+    .ui-help {
+        @apply mt-1.5 text-xs leading-5 text-slate-500;
+    }
+
+    .ui-error {
+        @apply mt-1.5 text-sm font-medium text-rose-600;
+    }
+
+    .ui-badge {
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold capitalize leading-none;
+    }
+
+    .ui-badge-neutral {
+        @apply bg-slate-100 text-slate-700;
+    }
+
+    .ui-badge-success {
+        @apply bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200;
+    }
+
+    .ui-badge-warning {
+        @apply bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200;
+    }
+
+    .ui-badge-danger {
+        @apply bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200;
+    }
+
+    .ui-badge-info {
+        @apply bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200;
+    }
+
+    .ui-badge-accent {
+        @apply bg-accent-50 text-accent-700 ring-1 ring-inset ring-accent-200;
+    }
+
+    .ui-table-wrap {
+        @apply overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm;
+        contain: paint;
+    }
+
+    .ui-table-scroll {
+        @apply overflow-x-auto;
+    }
+
+    .ui-table {
+        @apply w-full min-w-full text-left text-sm;
+    }
+
+    .ui-table thead {
+        @apply bg-slate-50/90 text-[11px] uppercase tracking-[0.08em] text-slate-500;
+    }
+
+    .ui-table th {
+        @apply whitespace-nowrap px-4 py-3.5 font-bold sm:px-5;
+    }
+
+    .ui-table td {
+        @apply px-4 py-4 align-middle text-slate-600 sm:px-5;
+    }
+
+    .ui-table tbody tr {
+        @apply border-t border-slate-100 transition hover:bg-slate-50/70;
+    }
+
+    .ui-empty {
+        @apply flex flex-col items-center justify-center px-6 py-14 text-center;
+    }
+
+    .ui-empty-icon {
+        @apply mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-brand-500 ring-8 ring-brand-50/50;
+    }
+
+    .ui-stat {
+        @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6;
+    }
+
+    .ui-stat-label {
+        @apply text-xs font-bold uppercase tracking-[0.1em] text-slate-500;
+    }
+
+    .ui-stat-value {
+        @apply mt-3 text-2xl font-extrabold text-slate-950 sm:text-3xl;
+    }
+
+    .ui-sidebar-link {
+        @apply flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20;
+    }
+
+    .ui-link {
+        @apply font-semibold text-brand-600 underline-offset-4 transition hover:text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20;
+    }
+
+    .ui-prose {
+        @apply text-[15px] leading-7 text-slate-600;
+    }
+
+    .ui-prose h1,
+    .ui-prose h2,
+    .ui-prose h3,
+    .ui-prose h4 {
+        @apply mb-3 mt-8 font-bold text-slate-950;
+    }
+
+    .ui-prose h1 {
+        @apply text-3xl;
+    }
+
+    .ui-prose h2 {
+        @apply text-2xl;
+    }
+
+    .ui-prose h3 {
+        @apply text-xl;
+    }
+
+    .ui-prose p,
+    .ui-prose ul,
+    .ui-prose ol {
+        @apply mb-5;
+    }
+
+    .ui-prose ul {
+        @apply list-disc pl-6;
+    }
+
+    .ui-prose ol {
+        @apply list-decimal pl-6;
+    }
+
+    .ui-prose a {
+        @apply font-semibold text-brand-600 underline underline-offset-4;
+    }
+
+    .ui-prose img {
+        @apply my-6 h-auto max-w-full rounded-2xl;
+    }
+
+    .ui-prose pre {
+        @apply my-5 overflow-x-auto rounded-xl bg-ink-900 p-4 text-sm text-slate-100;
+    }
+
+    .ui-pagination nav,
+    .ui-pagination > nav {
+        @apply flex flex-wrap items-center gap-1;
+    }
+
+    .ui-pagination a,
+    .ui-pagination span {
+        @apply inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-semibold;
+    }
+
+    .ui-pagination a {
+        @apply border border-slate-200 bg-white text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700;
+    }
+
+    .ui-pagination span[aria-current='page'] {
+        @apply bg-ink-900 text-white;
+    }
+
+    .ui-pagination span[aria-disabled='true'] {
+        @apply text-slate-400;
+    }
+}
+
+@layer utilities {
+    .ui-scrollbar {
+        scrollbar-color: var(--color-slate-300) transparent;
+        scrollbar-width: thin;
+    }
+
+    .ui-spinner {
+        @apply h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent;
+    }
 }

@@ -9,6 +9,7 @@ use App\Modules\Wishlist\Services\WishlistService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class WishlistController extends Controller
 {
@@ -16,7 +17,10 @@ class WishlistController extends Controller
 
     public function index(Request $request): View
     {
-        $items = Wishlist::where('user_id', $request->user()->id)->with('product')->latest()->paginate(20);
+        $items = Wishlist::where('user_id', $request->user()->id)
+            ->with(['product.inventory', 'product.vendor'])
+            ->latest()
+            ->paginate(20);
 
         return view('wishlist.index', ['items' => $items]);
     }
@@ -26,5 +30,14 @@ class WishlistController extends Controller
         $this->wishlist->add($request->user()->id, $request->integer('product_id'));
 
         return redirect()->route('wishlist.index')->with('status', __('Added to wishlist.'));
+    }
+
+    public function destroy(Request $request, Wishlist $wishlist): RedirectResponse
+    {
+        Gate::authorize('delete', $wishlist);
+
+        $wishlist->delete();
+
+        return redirect()->route('wishlist.index')->with('status', __('Removed from wishlist.'));
     }
 }

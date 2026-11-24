@@ -3,17 +3,30 @@
 @section('title', __('Add address'))
 
 @section('content')
-    <section class="mx-auto max-w-xl rounded-lg border border-stone-200 bg-white p-6">
-        <h1 class="mb-4 text-lg font-semibold">{{ __('Add address') }}</h1>
+    <div class="mx-auto max-w-3xl">
+        <a href="{{ route('addresses.index') }}" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-brand-600">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5l-7.5-7.5 7.5-7.5M3 12h18"/></svg>
+            {{ __('Back to addresses') }}
+        </a>
 
-        <form method="POST" action="{{ route('addresses.store') }}" class="space-y-4" novalidate>
-            @csrf
-            @include('addresses._form')
+        <x-ui.page-header :title="__('Add an address')" :description="__('Save a delivery address to make your next checkout quicker.')"
+            :eyebrow="__('Delivery details')" />
 
-            <div class="flex items-center gap-4">
-                <button type="submit" class="rounded-md bg-teal-700 px-4 py-2 font-medium text-white hover:bg-teal-800">{{ __('Save address') }}</button>
-                <a href="{{ route('addresses.index') }}" class="text-sm text-gray-600 hover:underline">{{ __('Cancel') }}</a>
-            </div>
-        </form>
-    </section>
+        <x-ui.card>
+            <form method="POST" action="{{ route('addresses.store') }}" class="space-y-6" novalidate
+                x-data="{ pending: false }" @submit="pending = true">
+                @csrf
+                @include('addresses._form')
+
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-end">
+                    <x-ui.button :href="route('addresses.index')" variant="outline">{{ __('Cancel') }}</x-ui.button>
+                    <x-ui.button type="submit" :disabled="false" x-bind:disabled="pending" :aria-busy="false"
+                        x-bind:aria-busy="pending ? 'true' : 'false'">
+                        <span x-show="pending" x-cloak class="ui-spinner" aria-hidden="true"></span>
+                        <span x-text="pending ? @js(__('Saving...')) : @js(__('Save address'))">{{ __('Save address') }}</span>
+                    </x-ui.button>
+                </div>
+            </form>
+        </x-ui.card>
+    </div>
 @endsection

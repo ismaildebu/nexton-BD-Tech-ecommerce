@@ -3,11 +3,24 @@
 namespace Tests\Feature\Identity;
 
 use App\Models\User;
+use App\Modules\Identity\Contracts\PhoneVerificationGateway;
 use App\Modules\Identity\Enums\UserStatus;
+use App\Modules\Identity\Support\NullPhoneVerificationGateway;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class RegistrationTest extends IdentityTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Notification::fake();
+        Log::spy();
+    }
+
     /**
      * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
@@ -31,27 +44,71 @@ class RegistrationTest extends IdentityTestCase
     public function test_user_can_register_with_email(): void
     {
         $this->post(route('register.store'), $this->payload())
-            ->assertRedirect(route('profile.edit'));
+            ->assertRedirect(route('verification.notice'));
 
-        $this->assertAuthenticated();
+        $this->assertGuest();
 
         $user = User::where('email', 'rahim@example.com')->firstOrFail();
 
+        $this->assertSame($user->id, session('verification_user_id'));
         $this->assertNull($user->phone);
         $this->assertSame(UserStatus::PendingVerification, $user->status);
         $this->assertFalse($user->is_protected);
         $this->assertTrue(Hash::check('Str0ngPassword', $user->password));
         $this->assertNotSame('Str0ngPassword', $user->password);
         $this->assertNotNull($user->customerProfile);
-        $this->assertNotNull($user->last_login_at);
+        $this->assertNull($user->last_login_at);
+
+        Notification::assertSentTo($user, VerifyEmail::class);
     }
 
     public function test_user_can_register_with_phone_only(): void
     {
         $this->post(route('register.store'), $this->payload(['email' => null, 'phone' => '01712345678']))
-            ->assertRedirect(route('profile.edit'));
+            ->assertRedirect(route('verification.notice'));
 
-        $this->assertDatabaseHas('users', ['email' => null, 'phone' => '+8801712345678']);
+        $this->assertGuest();
+
+        $user = User::where('phone', '+8801712345678')->firstOrFail();
+
+        $this->assertSame($user->id, session('verification_user_id'));
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'email' => null,
+            'phone' => '+8801712345678',
+            'phone_verified_at' => null,
+            'status' => UserStatus::PendingVerification->value,
+        ]);
+    }
+
+    public function test_registration_with_both_contacts_sends_both_challenges(): void
+    {
+        $this->post(route('register.store'), $this->payload(['phone' => '01712345678']))
+            ->assertRedirect(route('verification.notice'));
+
+        $user = User::where('email', 'rahim@example.com')->firstOrFail();
+
+        Notification::assertSentTo($user, VerifyEmail::class);
+        Log::shouldHaveReceived('info')->once()->with('Phone verification code', \Mockery::on(
+            fn (array $context): bool => $context['phone'] === '+8801712345678'
+                && $context['purpose'] === \App\Modules\Identity\Contracts\PhoneVerificationGateway::PURPOSE_VERIFICATION
+        ));
+    }
+
+    public function test_registration_reports_a_missing_phone_provider_without_losing_the_account(): void
+    {
+        $this->app->instance(PhoneVerificationGateway::class, new NullPhoneVerificationGateway);
+
+        $this->post(route('register.store'), $this->payload(['email' => null, 'phone' => '01712345678']))
+            ->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('error');
+
+        $this->assertGuest();
+        $this->assertDatabaseHas('users', [
+            'email' => null,
+            'phone' => '+8801712345678',
+            'status' => UserStatus::PendingVerification->value,
+        ]);
     }
 
     public function test_registration_rejects_duplicate_email(): void

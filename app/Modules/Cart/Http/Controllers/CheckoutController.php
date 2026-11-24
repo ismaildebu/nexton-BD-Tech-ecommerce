@@ -3,24 +3,32 @@
 namespace App\Modules\Cart\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Cart\Models\Cart;
+use App\Modules\Cart\Http\Requests\CheckoutRequest;
+use App\Modules\Coupon\Services\CouponService;
 use App\Modules\Order\Services\OrderService;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
 {
     public function __construct(private readonly OrderService $orders) {}
 
-    public function store(Request $request): RedirectResponse
+    public function store(CheckoutRequest $request): RedirectResponse
     {
-        $cart = Cart::where('user_id', $request->user()->id)->with('items.product')->first();
-
-        if (! $cart || $cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->with('status', __('Cart is empty.'));
+        try {
+            $order = $this->orders->create(
+                $request->user()->id,
+                $request->integer('address_id'),
+                $request->string('idempotency_key')->toString(),
+                $request->session()->get(CouponService::SESSION_KEY)
+            );
+        } catch (DomainException $exception) {
+            return redirect()->route('cart.index')->with('error', $exception->getMessage());
         }
 
-        $this->orders->create($request->user()->id);
+        if ($order->wasRecentlyCreated) {
+            $request->session()->forget(CouponService::SESSION_KEY);
+        }
 
         return redirect()->route('orders.index')->with('status', __('Order placed.'));
     }

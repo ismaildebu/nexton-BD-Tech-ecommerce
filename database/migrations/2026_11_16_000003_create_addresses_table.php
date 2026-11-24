@@ -26,7 +26,9 @@ return new class extends Migration
             // The unique index below therefore guarantees one default address per user.
             $table->unsignedBigInteger('default_owner_id')
                 ->nullable()
-                ->storedAs('IF(is_default = 1, user_id, NULL)');
+                ->storedAs(DB::getDriverName() === 'sqlite'
+                    ? 'CASE WHEN is_default = 1 THEN user_id ELSE NULL END'
+                    : 'IF(is_default = 1, user_id, NULL)');
             $table->unique('default_owner_id', 'addresses_one_default_per_user_unique');
 
             $table->timestamps();

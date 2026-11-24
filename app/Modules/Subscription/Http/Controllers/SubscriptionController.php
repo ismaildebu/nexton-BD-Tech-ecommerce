@@ -9,6 +9,7 @@ use App\Modules\Subscription\Services\SubscriptionService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use DomainException;
 
 class SubscriptionController extends Controller
 {
@@ -23,11 +24,17 @@ class SubscriptionController extends Controller
 
     public function store(CreateSubscriptionRequest $request): RedirectResponse
     {
-        $this->subscriptions->create(
-            $request->integer('vendor_id'),
-            $request->input('plan'),
-            $request->input('status', 'inactive')
-        );
+        try {
+            $this->subscriptions->create(
+                $request->integer('vendor_id'),
+                $request->input('plan'),
+                'inactive',
+                $request->input('starts_at'),
+                $request->input('expires_at'),
+            );
+        } catch (DomainException $exception) {
+            return back()->withInput()->with('error', $exception->getMessage());
+        }
 
         return redirect()->route('subscriptions.index')->with('status', __('Subscription created.'));
     }

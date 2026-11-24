@@ -16,7 +16,10 @@ class ReviewController extends Controller
 
     public function index(Request $request): View
     {
-        $reviews = Review::where('user_id', $request->user()->id)->latest()->paginate(20);
+        $reviews = Review::where('user_id', $request->user()->id)
+            ->with('product')
+            ->latest()
+            ->paginate(20);
 
         return view('reviews.index', ['reviews' => $reviews]);
     }
@@ -30,6 +33,8 @@ class ReviewController extends Controller
             $request->input('comment')
         );
 
-        return redirect()->route('reviews.index')->with('status', __('Review submitted.'));
+        return redirect()
+            ->to(route('products.show', $request->integer('product_id')).'#reviews')
+            ->with('status', __('Review submitted.'));
     }
 }

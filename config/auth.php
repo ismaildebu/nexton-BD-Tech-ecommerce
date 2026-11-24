@@ -94,6 +94,10 @@ return [
     |
     */
 
+    'verification' => [
+        'expire' => (int) env('AUTH_VERIFICATION_EXPIRE', 60),
+    ],
+
     'passwords' => [
         'users' => [
             'provider' => 'users',

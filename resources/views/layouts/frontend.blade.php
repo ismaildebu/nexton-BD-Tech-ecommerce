@@ -56,7 +56,7 @@
                     </a>
 
                     <!-- Wishlist Icon -->
-                    <a href="{{ route('wishlist.index') }}" class="ui-icon-btn relative" aria-label="{{ __('Wishlist') }}">
+                    <a href="{{ route('wishlist.index') }}" class="ui-icon-btn relative max-[379px]:hidden" aria-label="{{ __('Wishlist') }}">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                         </svg>
@@ -71,7 +71,7 @@
 
                     <!-- Profile / Auth -->
                     @auth
-                        <div class="relative flex items-center gap-2 pl-2 border-l border-slate-200">
+                        <div class="relative flex items-center gap-2 pl-2 border-l border-slate-200 max-[379px]:hidden">
                             <a href="{{ auth()->user()->is_admin ? route('admin.dashboard') : route('customer.dashboard') }}" class="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-brand-500">
                                 <div class="w-8 h-8 rounded-full bg-ink-900 text-white flex items-center justify-center font-bold text-xs">
                                     {{ substr(auth()->user()->name, 0, 1) }}
@@ -80,7 +80,7 @@
                             </a>
                         </div>
                     @else
-                        <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+                        <div class="flex items-center gap-2 pl-2 border-l border-slate-200 max-[379px]:hidden">
                             <a href="{{ route('login') }}" class="text-xs font-semibold px-3 py-1.5 text-slate-700 hover:text-brand-500 transition">
                                 {{ __('Sign In') }}
                             </a>

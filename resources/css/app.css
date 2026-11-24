@@ -565,6 +565,49 @@
     }
 }
 
+@layer components {
+    .homepage-section {
+        scroll-margin-top: calc(var(--header-height, 5rem) + 1.5rem);
+    }
+
+    .benefit-item {
+        transition: transform 200ms, border-color 200ms, box-shadow 200ms;
+    }
+
+    .homepage-section-manager > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .homepage-section-manager > summary::marker {
+        content: '';
+    }
+
+    .homepage-scroll {
+        scrollbar-width: none;
+        overscroll-behavior-inline: contain;
+    }
+
+    .homepage-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    .homepage-scroll > * {
+        scroll-snap-align: start;
+    }
+
+    .homepage-preset-input:checked + .homepage-preset-card .homepage-preset-check {
+        @apply border-brand-500 bg-brand-500 text-white;
+    }
+
+    [data-homepage-design='editorial'] .homepage-product-card {
+        border-radius: 0.25rem;
+    }
+
+    [data-homepage-design='bazaar'] .homepage-section h2 {
+        text-wrap: balance;
+    }
+}
+
 @layer utilities {
     .ui-scrollbar {
         scrollbar-color: var(--color-slate-300) transparent;

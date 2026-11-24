@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Support\Appearance;
+use App\Support\HomepageDesigns;
+use App\Support\HomepageSections;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
@@ -31,11 +33,14 @@ class SiteSetting extends Model
         'header_style',
         'footer_style',
         'card_style',
+        'homepage_design',
+        'homepage_sections',
     ];
 
     protected $casts = [
         'border_radius' => 'integer',
         'container_width' => 'integer',
+        'homepage_sections' => 'array',
     ];
 
     protected static function booted(): void
@@ -54,6 +59,7 @@ class SiteSetting extends Model
                 'footer_description' => 'The premium multivendor commerce platform in Bangladesh. Discover verified merchants, curated electronics, gadgets, and design essentials.',
                 'copyright_text' => 'Nexton BD Tech E-Commerce Ltd. All rights reserved.',
                 ...Appearance::defaults(),
+                'homepage_design' => 'signature',
             ],
         ));
     }
@@ -71,5 +77,15 @@ class SiteSetting extends Model
     public function appearanceTokens(): array
     {
         return Appearance::tokens($this->only(Appearance::FIELDS));
+    }
+
+    public function homepageDesign(): string
+    {
+        return HomepageDesigns::sanitize($this->homepage_design);
+    }
+
+    public function homepageSections(): array
+    {
+        return HomepageSections::sanitize($this->homepage_sections ?? []);
     }
 }

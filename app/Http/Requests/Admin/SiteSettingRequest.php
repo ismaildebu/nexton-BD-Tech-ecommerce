@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Support\Appearance;
+use App\Support\HomepageDesigns;
+use App\Support\HomepageSections;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,6 +32,16 @@ class SiteSettingRequest extends FormRequest
             }
         }
 
+        foreach (array_keys(HomepageSections::sections()) as $key) {
+            foreach (['eyebrow', 'title', 'description', 'button_label', 'image_url'] as $field) {
+                $input = "homepage_sections.{$key}.{$field}";
+
+                if (is_string($this->input($input))) {
+                    $values[$input] = trim($this->input($input));
+                }
+            }
+        }
+
         if ($values !== []) {
             $this->merge($values);
         }
@@ -37,7 +49,7 @@ class SiteSettingRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'site_name' => ['required', 'string', 'max:120'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024', 'dimensions:max_width=2000,max_height=2000'],
             'remove_logo' => ['nullable', 'boolean'],
@@ -57,6 +69,28 @@ class SiteSettingRequest extends FormRequest
             'header_style' => ['required', Rule::in(['classic', 'centered', 'minimal'])],
             'footer_style' => ['required', Rule::in(['classic', 'minimal', 'dark'])],
             'card_style' => ['required', Rule::in(['soft', 'elevated', 'minimal'])],
+            'homepage_design' => ['sometimes', 'required', Rule::in(array_keys(HomepageDesigns::presets()))],
+            'homepage_sections' => ['sometimes', 'array'],
         ];
+
+        $lastPosition = count(HomepageSections::sections()) - 1;
+
+        foreach (HomepageSections::sections() as $key => $section) {
+            $prefix = "homepage_sections.{$key}";
+            $rules[$prefix] = ['sometimes', 'array'];
+            $rules["{$prefix}.enabled"] = ['sometimes', 'boolean'];
+            $rules["{$prefix}.position"] = ['sometimes', 'required', 'integer', "between:0,{$lastPosition}"];
+            $rules["{$prefix}.eyebrow"] = ['nullable', 'string', 'max:80'];
+            $rules["{$prefix}.title"] = ['nullable', 'string', 'max:120'];
+            $rules["{$prefix}.description"] = ['nullable', 'string', 'max:500'];
+            $rules["{$prefix}.button_label"] = ['nullable', 'string', 'max:60'];
+            $rules["{$prefix}.layout"] = ['sometimes', 'required', Rule::in(array_keys($section['layouts']))];
+
+            if ($key === 'hero') {
+                $rules["{$prefix}.image_url"] = ['nullable', 'url:http,https', 'max:2048'];
+            }
+        }
+
+        return $rules;
     }
 }

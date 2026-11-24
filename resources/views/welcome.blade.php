@@ -1,5 +1,5 @@
 @extends('layouts.frontend')
-@section('title', config('app.name'))
+@section('title', $siteSettings->site_name)
 
 @section('content')
     <section class="relative isolate overflow-hidden rounded-[2rem] bg-ink-900 px-6 py-14 text-white shadow-xl sm:px-10 sm:py-20 lg:px-16 lg:py-24">

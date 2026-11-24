@@ -1,7 +1,7 @@
 @extends('layouts.guest')
 
 @section('title', __('Create account'))
-@section('heading', __('Join NEXTON'))
+@section('heading', __('Join :store', ['store' => $siteSettings->site_name]))
 
 @section('content')
     <div class="mb-6 flex items-start gap-3">

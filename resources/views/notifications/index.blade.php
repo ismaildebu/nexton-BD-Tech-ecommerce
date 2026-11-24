@@ -1,5 +1,5 @@
 @extends('layouts.frontend')
-@section('title', __('Notifications - :store', ['store' => config('app.name')]))
+@section('title', __('Notifications - :store', ['store' => $siteSettings->site_name]))
 
 @section('content')
 <div class="ui-page-narrow">

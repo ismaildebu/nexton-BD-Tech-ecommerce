@@ -3,11 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', config('app.name'))</title>
+    <title>@yield('title', $siteSettings->site_name)</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @include('layouts.partials.theme')
 </head>
 <body class="min-h-screen bg-white text-slate-900 lg:grid lg:grid-cols-[1.05fr_1fr]">
     <section class="relative hidden overflow-hidden bg-ink-900 p-12 text-white lg:flex lg:flex-col lg:justify-between xl:p-16">
@@ -24,14 +22,14 @@
                 @endforeach
             </div>
         </div>
-        <p class="relative text-xs text-slate-500">&copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}</p>
+        <p class="relative text-xs text-slate-500">&copy; {{ date('Y') }} {{ $siteSettings->copyright_text }}</p>
     </section>
 
     <main class="flex min-h-screen flex-col px-4 py-6 sm:px-8 lg:px-12 xl:px-20">
         <div class="lg:hidden"><x-ui.brand /></div>
         <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
             <div class="mb-8">
-                <p class="ui-eyebrow">{{ config('app.name') }}</p>
+                <p class="ui-eyebrow">{{ $siteSettings->site_name }}</p>
                 <h1 class="text-3xl font-extrabold text-slate-950">@yield('heading')</h1>
             </div>
 
